@@ -1,0 +1,39 @@
+{
+    "name": "Re Calculate",
+    "tt_name": "module_name",
+    "description": "Compute values for Redcap calcuate fields by record, event, field, or any combination of.",
+    "tt_description": "module_desc",
+    "documentation": "README.md",
+    "namespace": "UWMadison\\ReCalculate",
+    "authors": [
+        {
+            "name": "Adam Nunez",
+            "email": "Adam.Nunez@ctri.wisc.edu",
+            "institution": "UW Madison - Center for Tobacco Research and Intervention "
+        }
+    ],
+    "permissions": [
+        "redcap_every_page_top"
+    ],
+    "framework-version": 8,
+    "links": {
+        "project": [
+            {
+                "name": "Re-Calculate",
+                "icon": "fa fa-calcuator",
+                "url": "index.php"
+            }
+        ]
+    },
+    "project-settings": [
+        {
+            "key": "info",
+            "name": "This module has no configuration. You can vist the 'Re Calculate' page under 'External Modules' to use the module.",
+            "tt_name": "module_info",
+            "type": "descriptive"
+        }
+    ],
+    "compatibility": {
+        "redcap-version-min": "12.0.4"
+    }
+}
