@@ -22,7 +22,7 @@ class ReCalculate extends AbstractExternalModule
         if ($this->isPage('ExternalModules/manager/project.php') && $project_id) {
             $this->loadPrefix();
             $this->includeCSS();
-            $this->includeJs('config.js');
+            $this->includeJs();
         }
 
         // Index.php
@@ -95,11 +95,11 @@ class ReCalculate extends AbstractExternalModule
     }
 
     /*
-    HTML to include some local JS file
+    HTML to include the local JS file
     */
-    private function includeJs($path)
+    private function includeJs()
     {
-        echo "<script src={$this->getUrl('js/' .$path)}></script>";
+        echo "<script src={$this->getUrl('config.js')}></script>";
     }
 
     /*
