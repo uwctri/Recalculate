@@ -67,15 +67,32 @@ class ReCalculate extends AbstractExternalModule
     */
     private function loadSettings()
     {
+        // Project metadata
+        global $Proj;
 
         // Setup Redcap JS object
         $this->initializeJavascriptModuleObject();
         $this->tt_transferToJavascriptModuleObject();
 
-        // TODO need a list of events, record IDs, and calc fields
+        // List of all valid fields
+        $fields = [];
+        foreach ($Proj->metadata as $attr) {
+            if ($attr['element_type'] == 'calc') {
+                $fields[$attr['field_name']] = $attr['element_label'];
+            }
+        }
+
+        // All events maped as event_id:event_name 
+        $events = REDCap::getEventNames();
+
+        // All records, just get the first event to minimze data pull
+        $records = REDCap::getData('array', null, REDCap::getRecordIdField(), array_keys($events)[0]);
 
         // Organize the strucutre
         $data = json_encode([
+            "records" => array_keys($records),
+            "events" => $events,
+            "fields" => $fields,
             "isLong" => REDCap::isLongitudinal(),
             "csrf" => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
