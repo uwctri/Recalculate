@@ -20,8 +20,9 @@
         "project": [
             {
                 "name": "Re-Calculate",
-                "icon": "fa fa-calcuator",
-                "url": "index.php"
+                "icon": "fa fa-calculator",
+                "url": "index.php",
+                "show-header-and-footer": true
             }
         ]
     },

@@ -1,3 +1,1 @@
-<div class="projhdr"><i class="fas fa-calculator"></i> Re-Calculate</div>
-
-<p> <?= $this->tt('module_name'); ?> </p>
+<div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
