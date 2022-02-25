@@ -1,6 +1,6 @@
 <?php
 
-namespace UWMadison\ReCalculate;
+namespace AbtAssoc\ReCalculate;
 
 use ExternalModules\AbstractExternalModule;
 use REDCap;
@@ -95,7 +95,6 @@ class ReCalculate extends AbstractExternalModule
             "records" => $records,
             "events" => $events,
             "fields" => $fields,
-            "isLong" => REDCap::isLongitudinal(),
             "csrf" => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
         ]);
