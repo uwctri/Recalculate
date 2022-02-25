@@ -68,19 +68,19 @@
 
     // Build out event options
     const eventBox = document.getElementById('events');
-    $.each(ReCalc.events, (id, name) => {
+    $.each(Recalc.events, (id, name) => {
         let newOption = new Option(name, id);
         eventBox.add(newOption);
     });
 
     // Hide the events if we only have 1
-    if (Object.keys(ReCalc.events).length < 2) {
+    if (Object.keys(Recalc.events).length < 2) {
         $("#events").closest('.row').hide();
     }
 
     // Build out field options
     const fieldBox = document.getElementById('fields');
-    $.each(ReCalc.fields, (id, name) => {
+    $.each(Recalc.fields, (id, name) => {
         name = name.slice(0, label_length) + " : " + id;
         let newOption = new Option(name, id);
         fieldBox.add(newOption);
@@ -99,13 +99,13 @@
 
         $.ajax({
             method: 'POST',
-            url: ReCalc.router,
+            url: Recalc.router,
             data: {
                 route: 'recalculate',
                 records: records.join(),
                 events: events.join(),
                 fields: fields.join(),
-                redcap_csrf_token: ReCalc.csrf
+                redcap_csrf_token: Recalc.csrf
             },
             error: (jqXHR, textStatus, errorThrown) => {
                 console.log(`${jqXHR}\n${textStatus}\n${errorThrown}`)

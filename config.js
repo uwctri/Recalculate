@@ -5,7 +5,7 @@ $(document).ready(function () {
 
     $modal.on('show.bs.modal', function () {
         // Making sure we are overriding this modules's modal only.
-        if ($(this).data('module') !== ReCalc.modulePrefix)
+        if ($(this).data('module') !== Recalc.modulePrefix)
             return;
 
         if (typeof ExternalModules.Settings.prototype.resetConfigInstancesOld === 'undefined')
@@ -14,7 +14,7 @@ $(document).ready(function () {
         ExternalModules.Settings.prototype.resetConfigInstances = function () {
             ExternalModules.Settings.prototype.resetConfigInstancesOld();
 
-            if ($modal.data('module') !== ReCalc.modulePrefix)
+            if ($modal.data('module') !== Recalc.modulePrefix)
                 return;
 
             // Only customization
@@ -25,7 +25,7 @@ $(document).ready(function () {
     $modal.on('hide.bs.modal', function () {
 
         // Making sure we are overriding this modules's modal only.
-        if ($(this).data('module') !== ReCalc.modulePrefix)
+        if ($(this).data('module') !== Recalc.modulePrefix)
             return;
 
         if (typeof ExternalModules.Settings.prototype.resetConfigInstancesOld !== 'undefined')

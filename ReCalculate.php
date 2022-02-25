@@ -10,7 +10,7 @@ use Calculate;
 class ReCalculate extends AbstractExternalModule
 {
 
-    private $module_global = 'ReCalc';
+    private $module_global = 'Recalc';
 
     /*
     Redcap Hook, load config customizations or settings for core page

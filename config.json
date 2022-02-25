@@ -1,5 +1,5 @@
 {
-    "name": "Re Calculate",
+    "name": "Recalculate",
     "tt_name": "module_name",
     "description": "Compute values for Redcap calcuate fields by record, event, field, or any combination of.",
     "tt_description": "module_desc",
@@ -19,7 +19,7 @@
     "links": {
         "project": [
             {
-                "name": "Re-Calculate",
+                "name": "Recalculate",
                 "icon": "fa fa-calculator",
                 "url": "index.php",
                 "show-header-and-footer": true
