@@ -18,7 +18,7 @@ $(document).ready(function () {
                 return;
 
             // Only customization
-            $modal.addClass('reCalcConfig');
+            $modal.find('thead').remove();
         };
     });
 
@@ -27,8 +27,6 @@ $(document).ready(function () {
         // Making sure we are overriding this modules's modal only.
         if ($(this).data('module') !== ReCalc.modulePrefix)
             return;
-
-        $modal.removeClass('reCalcConfig');
 
         if (typeof ExternalModules.Settings.prototype.resetConfigInstancesOld !== 'undefined')
             ExternalModules.Settings.prototype.resetConfigInstances = ExternalModules.Settings.prototype.resetConfigInstancesOld;

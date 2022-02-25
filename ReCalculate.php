@@ -13,7 +13,7 @@ class ReCalculate extends AbstractExternalModule
     private $module_global = 'ReCalc';
 
     /*
-    Redcap Hook, loads config
+    Redcap Hook, load config customizations or settings for core page
     */
     public function redcap_every_page_top($project_id)
     {
@@ -21,14 +21,12 @@ class ReCalculate extends AbstractExternalModule
         // Custom Config page
         if ($this->isPage('ExternalModules/manager/project.php') && $project_id) {
             $this->loadPrefix();
-            $this->includeCSS();
             $this->includeJs();
         }
 
         // Index.php
         elseif ($_GET['prefix'] == $this->getPrefix() && $_GET['page'] == 'index') {
             $this->loadSettings();
-            $this->includeCSS();
         }
     }
 
@@ -47,12 +45,16 @@ class ReCalculate extends AbstractExternalModule
     public function recalculate($fields, $events, $records, $pid)
     {
         // Gather info
-        $pid = $_GET['pid'];
-        $field = $_POST['field'];
-        $record = $_POST['record'];
-        $event = $_POST['event'];
+        $fields = explode(',', $fields);
+        $records = explode(',', $_POST['record']);
+        $events = explode(',', $_POST['event']);
 
         // TODO
+        // Double check that the fields are calcs
+
+        // Double check the records exist
+
+        // Double check the events are valid
 
         // Return values
         echo json_encode([
@@ -85,12 +87,12 @@ class ReCalculate extends AbstractExternalModule
         // All events maped as event_id:event_name 
         $events = REDCap::getEventNames();
 
-        // All records, just get the first event to minimze data pull
-        $records = REDCap::getData('array', null, REDCap::getRecordIdField(), array_keys($events)[0]);
+        // All record ids as an array
+        $records = $this->getAllRecordIds($events);
 
         // Organize the strucutre
         $data = json_encode([
-            "records" => array_keys($records),
+            "records" => $records,
             "events" => $events,
             "fields" => $fields,
             "isLong" => REDCap::isLongitudinal(),
@@ -101,6 +103,18 @@ class ReCalculate extends AbstractExternalModule
         // Pass down to JS
         echo "<script>var {$this->module_global} = {$data};</script>";
         echo "<script> {$this->module_global}.em = {$this->getJavascriptModuleObjectName()}</script>";
+    }
+
+    /*
+    Return all records in the project, optionally pass events to
+    speed up the data pull
+    */
+    private function getAllRecordIds($events = null)
+    {
+        if (is_null($events)) {
+            $events = REDCap::getEventNames();
+        }
+        return array_keys(REDCap::getData('array', null, REDCap::getRecordIdField(), array_keys($events)[0]));
     }
 
     /*
@@ -117,13 +131,5 @@ class ReCalculate extends AbstractExternalModule
     private function includeJs()
     {
         echo "<script src={$this->getUrl('config.js')}></script>";
-    }
-
-    /*
-    HTML to include the local css file
-    */
-    private function includeCSS()
-    {
-        echo "<link rel='stylesheet' href={$this->getURL('style.css')}>";
     }
 }
