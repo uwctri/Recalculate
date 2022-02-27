@@ -1,13 +1,13 @@
 <?php
 
-namespace AbtAssoc\ReCalculate;
+namespace AbtAssoc\Recalculate;
 
 use ExternalModules\AbstractExternalModule;
 use REDCap;
 use Records;
 use Calculate;
 
-class ReCalculate extends AbstractExternalModule
+class Recalculate extends AbstractExternalModule
 {
 
     private $module_global = 'Recalc';
