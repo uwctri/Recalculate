@@ -4,7 +4,7 @@
     "description": "Compute values for Redcap calcuate fields by record, event, field, or any combination of.",
     "tt_description": "module_desc",
     "documentation": "README.md",
-    "namespace": "AbtAssoc\\ReCalculate",
+    "namespace": "AbtAssoc\\Recalculate",
     "authors": [
         {
             "name": "Adam Nunez",
