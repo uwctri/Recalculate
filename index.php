@@ -1,7 +1,7 @@
 <link rel='stylesheet' href='<?= $module->getURL('loading.min.css'); ?>'>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 
-<div class="container float-left" style="max-width:800px">
+<div id="recalcEm" class="container float-left" style="max-width:800px">
     <div class="row p-2">
         <label for="records" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_record'); ?></label>
         <div class="col-10">
@@ -39,6 +39,8 @@
 </div>
 
 <script>
+    // TODO need to add "all" option and "reset" option to the form
+    
     // Pop-up config
     const Toast = Swal.mixin({
         toast: true,
@@ -62,8 +64,10 @@
         $calcBtn.find('.ld').toggle();
     }
 
-    // Trash the placeholders, hide the loader
-    $("option").remove();
+    // Trash the placeholders
+    $("#recalcEm option").remove();
+    
+    // Force the submit button to static width
     $calcBtn.css('width', $calcBtn.css('width'))
 
     // Build out event options
@@ -114,7 +118,7 @@
             success: (data) => {
                 toggleBtn();
                 console.log(data);
-                // TODO show toast of updates
+                // TODO show toast of updates (or something else nice)
             }
         });
     });
