@@ -130,13 +130,19 @@
 
             const fields = $fieldsSelect.val() || (allFields ? ['*'] : []);
             const events = $eventsSelect.val() || (allEvents || !isLongitudinal ? ['*'] : []);
-            const records = $recordsText.val().replaceAll(' ', '').split(',');
+            const records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
 
-            // Validate selections
+            // Color missing fields (validation)
+            $fieldsSelect.addClass(fields.length ? '' : 'is-invalid');
+            $eventsSelect.addClass(events.length ? '' : 'is-invalid');
+            $recordsText.addClass(records.length ? '' : 'is-invalid');
+
+            // Exit if missing anything (validation)
             if (!fields.length || !events.length || !records.length) {
-
+                return;
             }
 
+            // Show loading icon
             toggleBtn();
 
             $.ajax({
@@ -164,11 +170,16 @@
         // All Records toggle
         $allRecords.on('click', () => {
             const all = $allRecords.is(':checked');
-            $recordsText.val(all ? '*' : '').attr('disabled', all);
+            $recordsText.val(all ? '*' : '').attr('disabled', all).removeClass('is-invalid');
         });
 
         // All Events & Fields toggle
-        $allEvents.on('click', () => $eventsSelect.val([]).attr('disabled', $allEvents.is(':checked')));
-        $allFields.on('click', () => $fieldsSelect.val([]).attr('disabled', $allFields.is(':checked')));
+        $allEvents.on('click', () => $eventsSelect.val([]).attr('disabled', $allEvents.is(':checked')).removeClass('is-invalid'));
+        $allFields.on('click', () => $fieldsSelect.val([]).attr('disabled', $allFields.is(':checked')).removeClass('is-invalid'));
+
+        // Remove validation decoration on change
+        $recordsText.on('change', () => $recordsText.removeClass('is-invalid'));
+        $eventsSelect.on('change', () => $eventsSelect.removeClass('is-invalid'));
+        $fieldsSelect.on('change', () => $fieldsSelect.removeClass('is-invalid'));
     })();
 </script>
