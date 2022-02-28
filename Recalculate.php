@@ -138,6 +138,7 @@ class Recalculate extends AbstractExternalModule
                 $fields[$attr['field_name']] = $attr['element_label'];
             }
         }
+        return $fields;
     }
 
     /*

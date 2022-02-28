@@ -67,12 +67,12 @@
             position: 'top-end',
             showConfirmButton: false,
             timer: 5000,
-            timerProgressBar: true,
+            timerProgressBar: false,
             didOpen: (toast) => {
                 toast.addEventListener('mouseenter', Swal.stopTimer)
                 toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
-        })
+        });
 
         // Static refs and config
         let isLongitudinal = true;
@@ -89,6 +89,12 @@
         function toggleBtn() {
             $calcBtn.find('.btnText').toggle();
             $calcBtn.find('.ld').toggle();
+        }
+
+        // Timeout button to prevent double click
+        function timeoutBtn() {
+            $calcBtn.prop('disabled', true);
+            setTimeout(() => $calcBtn.prop('disabled', false), 2500);
         }
 
         // Trash the placeholders
@@ -155,14 +161,43 @@
                     fields: fields.join(),
                     redcap_csrf_token: Recalc.csrf
                 },
+
+                // Only occurs on network or technical issue
                 error: (jqXHR, textStatus, errorThrown) => {
+                    toggleBtn();
                     console.log(`${jqXHR}\n${textStatus}\n${errorThrown}`)
-                    toggleBtn();
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Unable to perform recalcuation'
+                    });
                 },
+
+                // Response returned from server
                 success: (data) => {
+
                     toggleBtn();
+                    timeoutBtn();
+                    data = JSON.parse(data);
                     console.log(data);
-                    // TODO show toast of updates (or something else nice)
+
+                    // Server returned a validation error
+                    if (data.errors.length) {
+                        data.errors.forEach((text) => {
+                            Toast.fire({
+                                icon: 'error',
+                                title: text
+                            });
+                        });
+                    }
+
+                    // No errors, everything went well
+                    else {
+                        // TODO Show how many changes were made
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Recalculations done!'
+                        });
+                    }
                 }
             });
         });
