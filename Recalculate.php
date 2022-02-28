@@ -44,17 +44,47 @@ class Recalculate extends AbstractExternalModule
     */
     public function recalculate($fields, $events, $records, $pid)
     {
+        $errors = [];
+
         // Gather info
         $fields = explode(',', $fields);
-        $records = explode(',', $_POST['record']);
-        $events = explode(',', $_POST['event']);
+        $records = explode(',', $records);
+        $events = explode(',', $events);
 
-        // TODO
         // Double check that the fields are calcs
-
-        // Double check the records exist
+        $validFields = $this->getAllCalcFields();
+        if ($fields[0] == "*") {
+            $fields = $validFields;
+        } else {
+            $checkFields = array_intersect($fields, $validFields);
+            if (length($checkFields) != length(($fields))) {
+                $errors[] = "Invalid field(s) found";
+            }
+        }
 
         // Double check the events are valid
+        $validEvents = array_keys(REDCap::getEventNames());
+        if ($events[0] == "*") {
+            $events = $validEvents;
+        } else {
+            $checkEvents = array_intersect($events, $validEvents);
+            if (length($checkEvents) != length(($events))) {
+                $errors[] = "Invalid event(s) found";
+            }
+        }
+
+        // Double check the records exist
+        $validRecords = $this->getAllRecordIds();
+        if ($records[0] == "*") {
+            $records = $validRecords;
+        } else {
+            $checkRecords = array_intersect($records, $validRecords);
+            if (length($checkRecords) != length(($records))) {
+                $errors[] = "Invalid records(s) found";
+            }
+        }
+
+        // TODO Execute calc
 
         // Return values
         echo json_encode([
@@ -69,20 +99,12 @@ class Recalculate extends AbstractExternalModule
     */
     private function loadSettings()
     {
-        // Project metadata
-        global $Proj;
-
         // Setup Redcap JS object
         $this->initializeJavascriptModuleObject();
         $this->tt_transferToJavascriptModuleObject();
 
         // List of all valid fields
-        $fields = [];
-        foreach ($Proj->metadata as $attr) {
-            if ($attr['element_type'] == 'calc') {
-                $fields[$attr['field_name']] = $attr['element_label'];
-            }
-        }
+        $fields = $this->getAllCalcFields();
 
         // All events maped as event_id:event_name 
         $events = REDCap::getEventNames();
@@ -102,6 +124,20 @@ class Recalculate extends AbstractExternalModule
         // Pass down to JS
         echo "<script>var {$this->module_global} = {$data};</script>";
         echo "<script> {$this->module_global}.em = {$this->getJavascriptModuleObjectName()}</script>";
+    }
+
+    /*
+    Return all all field names that are configured as "calc"
+    */
+    private function getAllCalcFields()
+    {
+        global $Proj;
+        $fields = [];
+        foreach ($Proj->metadata as $attr) {
+            if ($attr['element_type'] == 'calc') {
+                $fields[$attr['field_name']] = $attr['element_label'];
+            }
+        }
     }
 
     /*
