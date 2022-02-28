@@ -3,9 +3,22 @@
 
 <div id="recalcEm" class="container float-left" style="max-width:800px">
     <div class="row p-2">
+        <div class="col-12">
+            <p>
+                The below form can be used to recalculate some subset of REDCap "calc" fields.
+                Select one or many records, events, and feilds to perform a reclculation on.
+                You may also use the toggle to select all of applicable fields, events, or records.
+            </p>
+        </div>
+    </div>
+    <div class="row p-2">
         <label for="records" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_record'); ?></label>
         <div class="col-10">
             <input id="records" name="records" placeholder="record_1, record_2 etc" type="text" class="form-control">
+            <div class="custom-control custom-switch float-right">
+                <input type="checkbox" class="custom-control-input" id="allRecords" data-state="0">
+                <label class="custom-control-label" for="allRecords"></label>
+            </div>
         </div>
     </div>
     <div class="row p-2">
@@ -16,6 +29,10 @@
                 <option value="2">Placeholder B</option>
                 <option value="3">Placeholder C</option>
             </select>
+            <div class="custom-control custom-switch float-right">
+                <input type="checkbox" class="custom-control-input" id="allEvents" data-state="0">
+                <label class="custom-control-label" for="allEvents"></label>
+            </div>
         </div>
     </div>
     <div class="row p-2">
@@ -26,6 +43,10 @@
                 <option value="2">Placeholder B</option>
                 <option value="3">Placeholder C</option>
             </select>
+            <div class="custom-control custom-switch float-right">
+                <input type="checkbox" class="custom-control-input" id="allFields" data-state="0">
+                <label class="custom-control-label" for="allFields"></label>
+            </div>
         </div>
     </div>
     <div class="row p-2">
@@ -39,87 +60,115 @@
 </div>
 
 <script>
-    // TODO need to add "all" option and "reset" option to the form
-    
-    // Pop-up config
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    })
-
-    // Static refs and config
-    const $calcBtn = $("#recalc");
-    const label_length = 46;
-
-    // Toggle loading ring
-    function toggleBtn() {
-        $calcBtn.find('.btnText').toggle();
-        $calcBtn.find('.ld').toggle();
-    }
-
-    // Trash the placeholders
-    $("#recalcEm option").remove();
-    
-    // Force the submit button to static width
-    $calcBtn.css('width', $calcBtn.css('width'))
-
-    // Build out event options
-    const eventBox = document.getElementById('events');
-    $.each(Recalc.events, (id, name) => {
-        let newOption = new Option(name, id);
-        eventBox.add(newOption);
-    });
-
-    // Hide the events if we only have 1
-    if (Object.keys(Recalc.events).length < 2) {
-        $("#events").closest('.row').hide();
-    }
-
-    // Build out field options
-    const fieldBox = document.getElementById('fields');
-    $.each(Recalc.fields, (id, name) => {
-        name = name.slice(0, label_length) + " : " + id;
-        let newOption = new Option(name, id);
-        fieldBox.add(newOption);
-    });
-
-    // Button trigger
-    $calcBtn.on('click', () => {
-
-        let fields = $("#fields").val() || [];
-        let events = $("#events").val() || [];
-        let records = $("#records").val() || [];
-
-        // TODO check that selections are valid
-
-        toggleBtn();
-
-        $.ajax({
-            method: 'POST',
-            url: Recalc.router,
-            data: {
-                route: 'recalculate',
-                records: records.join(),
-                events: events.join(),
-                fields: fields.join(),
-                redcap_csrf_token: Recalc.csrf
-            },
-            error: (jqXHR, textStatus, errorThrown) => {
-                console.log(`${jqXHR}\n${textStatus}\n${errorThrown}`)
-                toggleBtn();
-            },
-            success: (data) => {
-                toggleBtn();
-                console.log(data);
-                // TODO show toast of updates (or something else nice)
+    (() => {
+        // Pop-up config
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
+        })
+
+        // Static refs and config
+        let isLongitudinal = true;
+        const label_length = 46;
+        const $calcBtn = $("#recalc");
+        const $eventsSelect = $("#events");
+        const $fieldsSelect = $("#fields");
+        const $recordsText = $("#records");
+        const $allRecords = $("#allRecords");
+        const $allEvents = $("#allEvents");
+        const $allFields = $("#allFields");
+
+        // Toggle loading ring
+        function toggleBtn() {
+            $calcBtn.find('.btnText').toggle();
+            $calcBtn.find('.ld').toggle();
+        }
+
+        // Trash the placeholders
+        $("#recalcEm option").remove();
+
+        // Force the submit button to static width
+        $calcBtn.css('width', $calcBtn.css('width'));
+
+        // Force all checkboxes to default to off (browsers will remember last state)
+        $("input").prop("checked", false);
+
+        // Build out event options
+        const eventBox = document.getElementById('events');
+        $.each(Recalc.events, (id, name) => {
+            let newOption = new Option(name, id);
+            eventBox.add(newOption);
         });
-    });
+
+        // Hide the events if we only have 1
+        if (Object.keys(Recalc.events).length < 2) {
+            isLongitudinal = false;
+            $eventsSelect.closest('.row').hide();
+            $eventsSelect.val($eventsSelect.find("option").val());
+        }
+
+        // Build out field options
+        const fieldBox = document.getElementById('fields');
+        $.each(Recalc.fields, (id, name) => {
+            name = name.slice(0, label_length) + " : " + id;
+            let newOption = new Option(name, id);
+            fieldBox.add(newOption);
+        });
+
+        // Button trigger
+        $calcBtn.on('click', () => {
+
+            const allFields = $allFields.is(':checked');
+            const allEvents = $allEvents.is(':checked');
+
+            const fields = $fieldsSelect.val() || (allFields ? ['*'] : []);
+            const events = $eventsSelect.val() || (allEvents || !isLongitudinal ? ['*'] : []);
+            const records = $recordsText.val().replaceAll(' ', '').split(',');
+
+            // Validate selections
+            if (!fields.length || !events.length || !records.length) {
+
+            }
+
+            toggleBtn();
+
+            $.ajax({
+                method: 'POST',
+                url: Recalc.router,
+                data: {
+                    route: 'recalculate',
+                    records: records.join(),
+                    events: events.join(),
+                    fields: fields.join(),
+                    redcap_csrf_token: Recalc.csrf
+                },
+                error: (jqXHR, textStatus, errorThrown) => {
+                    console.log(`${jqXHR}\n${textStatus}\n${errorThrown}`)
+                    toggleBtn();
+                },
+                success: (data) => {
+                    toggleBtn();
+                    console.log(data);
+                    // TODO show toast of updates (or something else nice)
+                }
+            });
+        });
+
+        // All Records toggle
+        $allRecords.on('click', () => {
+            const all = $allRecords.is(':checked');
+            $recordsText.val(all ? '*' : '').attr('disabled', all);
+        });
+
+        // All Events & Fields toggle
+        $allEvents.on('click', () => $eventsSelect.val([]).attr('disabled', $allEvents.is(':checked')));
+        $allFields.on('click', () => $fieldsSelect.val([]).attr('disabled', $allFields.is(':checked')));
+    })();
 </script>
