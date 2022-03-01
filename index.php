@@ -58,6 +58,8 @@
 
 <script>
     (() => {
+        const settings = <?= json_encode($module->loadSettings()); ?>;
+
         // Pop-up config
         const Toast = Swal.mixin({
             toast: true,
@@ -102,13 +104,13 @@
 
         // Build out event options
         const eventBox = document.getElementById('events');
-        $.each(Recalc.events, (id, name) => {
+        $.each(settings.events, (id, name) => {
             let newOption = new Option(name, id);
             eventBox.add(newOption);
         });
 
         // Hide the events if we only have 1
-        if (Object.keys(Recalc.events).length < 2) {
+        if (Object.keys(settings.events).length < 2) {
             isLongitudinal = false;
             $eventsSelect.closest('.row').hide();
             $eventsSelect.val($eventsSelect.find("option").val());
@@ -116,7 +118,7 @@
 
         // Build out field options
         const fieldBox = document.getElementById('fields');
-        $.each(Recalc.fields, (id, name) => {
+        $.each(settings.fields, (id, name) => {
             name = name.slice(0, label_length) + " : " + id;
             let newOption = new Option(name, id);
             fieldBox.add(newOption);
@@ -147,13 +149,13 @@
 
             $.ajax({
                 method: 'POST',
-                url: Recalc.router,
+                url: settings.router,
                 data: {
                     route: 'recalculate',
                     records: records.join(),
                     events: events.join(),
                     fields: fields.join(),
-                    redcap_csrf_token: Recalc.csrf
+                    redcap_csrf_token: settings.csrf
                 },
 
                 // Only occurs on network or technical issue

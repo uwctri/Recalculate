@@ -109,36 +109,23 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Inits the ReCalc global and loads all settings.
-    Also packs the Redcap JS object
+    Inits the Recalc global and loads all settings.
     */
-    private function loadSettings()
+    public function loadSettings()
     {
-        // Setup Redcap JS object
-        $this->initializeJavascriptModuleObject();
-        $this->tt_transferToJavascriptModuleObject();
-
         // List of all valid fields
         $fields = $this->getAllCalcFields();
 
         // All events maped as event_id:event_name 
         $events = REDCap::getEventNames();
 
-        // All record ids as an array
-        $records = $this->getAllRecordIds($events);
-
         // Organize the strucutre
-        $data = json_encode([
-            "records" => $records,
+        return [
             "events" => $events,
             "fields" => $fields,
             "csrf" => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
-        ]);
-
-        // Pass down to JS
-        echo "<script>var {$this->module_global} = {$data};</script>";
-        echo "<script> {$this->module_global}.em = {$this->getJavascriptModuleObjectName()}</script>";
+        ];
     }
 
     /*
