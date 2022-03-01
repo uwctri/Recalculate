@@ -12,9 +12,6 @@
             "institution": "Abt Associates"
         }
     ],
-    "permissions": [
-        "redcap_every_page_top"
-    ],
     "framework-version": 8,
     "links": {
         "project": [
