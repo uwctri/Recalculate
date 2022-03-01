@@ -48,18 +48,15 @@ class Recalculate extends AbstractExternalModule
         $config = [
             "field" => [
                 "post" => explode(',', $fields),
-                "valid" => $this->getAllCalcFields(),
-                "size" => 0
+                "valid" => array_keys($this->getAllCalcFields()),
             ],
             "record" => [
                 "post" => explode(',', $records),
                 "valid" => $this->getAllRecordIds($eventNames),
-                "size" => 0
             ],
             "event" => [
                 "post" => explode(',', $events),
                 "valid" => array_keys($eventNames),
-                "size" => 0
             ]
         ];
 
@@ -76,14 +73,14 @@ class Recalculate extends AbstractExternalModule
                     ];
                 }
             }
-            $config[$name]['size'] = length($c['post']);
         }
 
         // Find a batch size (literally just guessing)
         $batchSize = 100;
-        if ($config['fields']['size'] > 400) {
+        $size = $config['fields']['size'];
+        if ($size > 400) {
             $batchSize = 5;
-        } else if ($config['fields']['size'] > 60) {
+        } else if ($size > 60) {
             $batchSize = 20;
         }
 
