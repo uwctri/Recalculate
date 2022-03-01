@@ -5,9 +5,7 @@
     <div class="row p-2">
         <div class="col-12">
             <p>
-                The below form can be used to recalculate some subset of REDCap "calc" fields.
-                Select one or many records, events, and feilds to perform a reclculation on.
-                You may also use the toggle to select all of applicable fields, events, or records.
+                <?= $module->tt('label_form'); ?>
             </p>
         </div>
     </div>
@@ -25,9 +23,6 @@
         <label for="events" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_event'); ?></label>
         <div class="col-10">
             <select multiple="multiple" id="events" name="events" class="custom-select">
-                <option value="1">Placeholder A</option>
-                <option value="2">Placeholder B</option>
-                <option value="3">Placeholder C</option>
             </select>
             <div class="custom-control custom-switch float-right">
                 <input type="checkbox" class="custom-control-input" id="allEvents" data-state="0">
@@ -39,9 +34,6 @@
         <label for="fields" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_field'); ?></label>
         <div class="col-10">
             <select id="fields" name="fields" class="custom-select" multiple="multiple">
-                <option value="1">Placeholder A</option>
-                <option value="2">Placeholder B</option>
-                <option value="3">Placeholder C</option>
             </select>
             <div class="custom-control custom-switch float-right">
                 <input type="checkbox" class="custom-control-input" id="allFields" data-state="0">
@@ -96,9 +88,6 @@
             $calcBtn.prop('disabled', true);
             setTimeout(() => $calcBtn.prop('disabled', false), 2500);
         }
-
-        // Trash the placeholders
-        $("#recalcEm option").remove();
 
         // Force the submit button to static width
         $calcBtn.css('width', $calcBtn.css('width'));
@@ -192,10 +181,9 @@
 
                     // No errors, everything went well
                     else {
-                        // TODO Show how many changes were made
                         Toast.fire({
                             icon: 'success',
-                            title: 'Recalculations done!'
+                            title: `Recalculatd ${data.changes} data points!`
                         });
                     }
                 }

@@ -14,6 +14,5 @@ The module has no configuration, instead you should navigate to the dedicated mo
 
 ## Todo 
 
-* Is this really as fast as we can go?
-* Note in JS
+* Make sure we are really only looping over the requested fields
 * More testing
