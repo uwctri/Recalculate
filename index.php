@@ -1,4 +1,9 @@
 <link rel='stylesheet' href='<?= $module->getURL('loading.min.css'); ?>'>
+<style>
+    #center {
+        overflow-x: hidden;
+    }
+</style>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 
 <div id="recalcEm" class="container float-left" style="max-width:800px">

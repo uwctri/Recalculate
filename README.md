@@ -15,4 +15,5 @@ The module has no configuration, instead you should navigate to the dedicated mo
 ## Todo 
 
 * Make sure we are really only looping over the requested fields
+* Form width should be limited to avoid excess white space with some min width
 * More testing
