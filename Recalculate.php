@@ -45,42 +45,31 @@ class Recalculate extends AbstractExternalModule
     public function recalculate($fields, $events, $records, $pid)
     {
         $errors = [];
+        $eventNames = REDCap::getEventNames();
+        $config = [
+            "field" => [
+                "post" => explode(',', $fields),
+                "valid" => $this->getAllCalcFields()
+            ],
+            "record" => [
+                "post" => explode(',', $records),
+                "valid" => $this->getAllRecordIds($eventNames)
+            ],
+            "event" => [
+                "post" => explode(',', $events),
+                "valid" => array_keys($eventNames)
+            ]
+        ];
 
-        // Gather info
-        $fields = explode(',', $fields);
-        $records = explode(',', $records);
-        $events = explode(',', $events);
-
-        // Double check that the fields are calcs
-        $validFields = $this->getAllCalcFields();
-        if ($fields[0] == "*") {
-            $fields = $validFields;
-        } else {
-            $checkFields = array_intersect($fields, $validFields);
-            if (length($checkFields) != length(($fields))) {
-                $errors[] = "Invalid field(s) found";
-            }
-        }
-
-        // Double check the events are valid
-        $validEvents = array_keys(REDCap::getEventNames());
-        if ($events[0] == "*") {
-            $events = $validEvents;
-        } else {
-            $checkEvents = array_intersect($events, $validEvents);
-            if (length($checkEvents) != length(($events))) {
-                $errors[] = "Invalid event(s) found";
-            }
-        }
-
-        // Double check the records exist
-        $validRecords = $this->getAllRecordIds();
-        if ($records[0] == "*") {
-            $records = $validRecords;
-        } else {
-            $checkRecords = array_intersect($records, $validRecords);
-            if (length($checkRecords) != length(($records))) {
-                $errors[] = "Invalid records(s) found";
+        // Double check validation for everything
+        foreach ($config as $name => $c) {
+            if ($c['post'][0] == "*") {
+                $config[$name]['post'] = $config[$name]['valid'];
+            } else {
+                $intersection = array_intersect($config[$name]['post'], $config[$name]['valid']);
+                if (length($intersection) != length($config[$name]['post'])) {
+                    $errors[] = "Invalid {$name}(s) found";
+                }
             }
         }
 
