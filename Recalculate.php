@@ -9,14 +9,6 @@ use Calculate;
 class Recalculate extends AbstractExternalModule
 {
     /*
-    Redcap Hook, always show EM link
-    */
-    public function redcap_module_link_check_display($project_id, $link)
-    {
-        return True;
-    }
-
-    /*
     Performs core functionality. Invoked via router/ajax.
     Fire the native redcap calculated field routines.
     */
