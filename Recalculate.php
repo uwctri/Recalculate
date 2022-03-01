@@ -8,27 +8,6 @@ use Calculate;
 
 class Recalculate extends AbstractExternalModule
 {
-
-    private $module_global = 'Recalc';
-
-    /*
-    Redcap Hook, load config customizations or settings for core page
-    */
-    public function redcap_every_page_top($project_id)
-    {
-
-        // Custom Config page
-        if ($this->isPage('ExternalModules/manager/project.php') && $project_id) {
-            $this->loadPrefix();
-            $this->includeJs();
-        }
-
-        // Index.php
-        elseif ($_GET['prefix'] == $this->getPrefix() && $_GET['page'] == 'index') {
-            $this->loadSettings();
-        }
-    }
-
     /*
     Redcap Hook, always show EM link
     */
@@ -153,21 +132,5 @@ class Recalculate extends AbstractExternalModule
             $events = REDCap::getEventNames();
         }
         return array_keys(REDCap::getData('array', null, REDCap::getRecordIdField(), array_keys($events)[0]));
-    }
-
-    /*
-    HTML to pass down module prefix for the config page.
-    */
-    private function loadPrefix()
-    {
-        echo "<script>var {$this->module_global} = {'modulePrefix': '{$this->getPrefix()}'};</script>";
-    }
-
-    /*
-    HTML to include the local JS file
-    */
-    private function includeJs()
-    {
-        echo "<script src={$this->getUrl('config.js')}></script>";
     }
 }
