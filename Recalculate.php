@@ -18,15 +18,15 @@ class Recalculate extends AbstractExternalModule
         $eventNames = REDCap::getEventNames();
         $config = [
             "field" => [
-                "post" => explode(',', $fields),
+                "post" => array_map('trim', explode(',', $fields)),
                 "valid" => array_keys($this->getAllCalcFields()),
             ],
             "record" => [
-                "post" => explode(',', $records),
+                "post" => array_map('trim', explode(',', $records)),
                 "valid" => $this->getAllRecordIds($eventNames),
             ],
             "event" => [
-                "post" => explode(',', $events),
+                "post" => array_map('trim', explode(',', $events)),
                 "valid" => array_keys($eventNames),
             ]
         ];
