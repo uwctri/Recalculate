@@ -64,10 +64,10 @@ class Recalculate extends AbstractExternalModule
         // Double check validation for everything
         foreach ($config as $name => $c) {
             if ($c['post'][0] == "*") {
-                $config[$name]['post'] = $config[$name]['valid'];
+                $config[$name]['post'] = $c[$name]['valid'];
             } else {
-                $intersection = array_intersect($config[$name]['post'], $config[$name]['valid']);
-                if (length($intersection) != length($config[$name]['post'])) {
+                $intersection = array_intersect($c['post'], $c['valid']);
+                if (length($intersection) != length($c['post'])) {
                     $errors[] = "Invalid {$name}(s) found";
                 }
             }
