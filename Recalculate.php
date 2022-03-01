@@ -41,7 +41,7 @@ class Recalculate extends AbstractExternalModule
     Performs core functionality. Invoked via router/ajax.
     Fire the native redcap calculated field routines.
     */
-    public function recalculate($fields, $events, $records, $pid)
+    public function recalculate($fields, $events, $records)
     {
         $errors = [];
         $eventNames = REDCap::getEventNames();
