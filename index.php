@@ -119,8 +119,7 @@
         // Build out field options
         const fieldBox = document.getElementById('fields');
         $.each(settings.fields, (id, name) => {
-            name = name.slice(0, label_length) + " : " + id;
-            let newOption = new Option(name, id);
+            let newOption = new Option(`${id} : ${name}`, id);
             fieldBox.add(newOption);
         });
 

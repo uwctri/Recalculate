@@ -80,21 +80,14 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Inits the Recalc global and loads all settings.
+    Fetch and return all sever-sourced info
     */
     public function loadSettings()
     {
-        // List of all valid fields
-        $fields = $this->getAllCalcFields();
-
-        // All events maped as event_id:event_name 
-        $events = REDCap::getEventNames();
-
-        // Organize the strucutre
         return [
-            "events" => $events,
-            "fields" => $fields,
-            "csrf" => $this->getCSRFToken(),
+            "events" => REDCap::getEventNames(),
+            "fields" => $this->getAllCalcFields(),
+            "csrf"   => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
         ];
     }
