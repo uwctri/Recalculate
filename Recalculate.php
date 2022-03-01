@@ -39,7 +39,7 @@ class Recalculate extends AbstractExternalModule
                 $intersection = array_intersect($c['post'], $c['valid']);
                 if (length($intersection) != length($c['post'])) {
                     $errors[] = [
-                        "text" => "Invalid {$name}(s) found",
+                        "text" => str_replace("_", $name, $this->tt('label_record')),
                         "display" => true
                     ];
                 }

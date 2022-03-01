@@ -164,7 +164,7 @@
                     console.log(`${jqXHR}\n${textStatus}\n${errorThrown}`)
                     Toast.fire({
                         icon: 'error',
-                        title: 'Unable to perform recalcuation'
+                        title: <?= $module->tt('error_network'); ?>
                     });
                 },
 
@@ -181,7 +181,7 @@
                         data.errors.forEach((err) => {
                             Toast.fire({
                                 icon: 'error',
-                                title: err.display ? err.text : "Unknown error occured!"
+                                title: err.display ? err.text : <?= $module->tt('error_unknown'); ?>
                             });
                         });
                     }
@@ -190,7 +190,7 @@
                     else {
                         Toast.fire({
                             icon: 'success',
-                            title: `Recalculatd ${data.changes} data points!`
+                            title: `Recalculatd ${data.changes} data points!` //TODO
                         });
                     }
                 }
