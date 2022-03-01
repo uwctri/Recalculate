@@ -134,8 +134,8 @@
             const allFields = $allFields.is(':checked');
             const allEvents = $allEvents.is(':checked');
 
-            const fields = $fieldsSelect.val() || (allFields ? ['*'] : []);
-            const events = $eventsSelect.val() || (allEvents || !isLongitudinal ? ['*'] : []);
+            const fields = allFields ? ['*'] : $fieldsSelect.val();
+            const events = (allEvents || !isLongitudinal) ? ['*'] : $eventsSelect.val();
             const records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
 
             // Color missing fields (validation)
