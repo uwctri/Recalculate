@@ -182,10 +182,10 @@
 
                     // Server returned a validation error
                     if (data.errors.length) {
-                        data.errors.forEach((text) => {
+                        data.errors.forEach((err) => {
                             Toast.fire({
                                 icon: 'error',
-                                title: text
+                                title: err.display ? err.text : "Unknown error occured!"
                             });
                         });
                     }

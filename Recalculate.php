@@ -4,7 +4,6 @@ namespace AbtAssoc\Recalculate;
 
 use ExternalModules\AbstractExternalModule;
 use REDCap;
-use Records;
 use Calculate;
 
 class Recalculate extends AbstractExternalModule
@@ -49,36 +48,66 @@ class Recalculate extends AbstractExternalModule
         $config = [
             "field" => [
                 "post" => explode(',', $fields),
-                "valid" => $this->getAllCalcFields()
+                "valid" => $this->getAllCalcFields(),
+                "size" => 0
             ],
             "record" => [
                 "post" => explode(',', $records),
-                "valid" => $this->getAllRecordIds($eventNames)
+                "valid" => $this->getAllRecordIds($eventNames),
+                "size" => 0
             ],
             "event" => [
                 "post" => explode(',', $events),
-                "valid" => array_keys($eventNames)
+                "valid" => array_keys($eventNames),
+                "size" => 0
             ]
         ];
 
         // Double check validation for everything
         foreach ($config as $name => $c) {
             if ($c['post'][0] == "*") {
-                $config[$name]['post'] = $c[$name]['valid'];
+                $config[$name]['post'] = $c['valid'];
             } else {
                 $intersection = array_intersect($c['post'], $c['valid']);
                 if (length($intersection) != length($c['post'])) {
-                    $errors[] = "Invalid {$name}(s) found";
+                    $errors[] = [
+                        "text" => "Invalid {$name}(s) found",
+                        "display" => true
+                    ];
+                }
+            }
+            $config[$name]['size'] = length($c['post']);
+        }
+
+        // Find a batch size (literally just guessing)
+        $batchSize = 100;
+        if ($config['fields']['size'] > 400) {
+            $batchSize = 5;
+        } else if ($config['fields']['size'] > 60) {
+            $batchSize = 20;
+        }
+
+        // Execute Calc
+        $updates = 0;
+        $recordBatches = array_chunk($config['record']['post'], $batchSize);
+        foreach ($recordBatches as $recordSet) {
+            foreach ($config['event']['post'] as $event_id) {
+                $calcUpdates = Calculate::saveCalcFields($recordSet, $config['fields']['post'], $event_id);
+                if (is_numeric($calcUpdates)) {
+                    $updates += $calcUpdates;
+                } else {
+                    $errors[] = [
+                        "text" => $calcUpdates,
+                        "display" => false
+                    ];
                 }
             }
         }
 
-        // TODO Execute calc
-
         // Return values
         echo json_encode([
-            'changes' => 0,
-            'errors' => []
+            'changes' => $updates,
+            'errors' => $errors
         ]);
     }
 
