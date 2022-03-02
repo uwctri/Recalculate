@@ -16,7 +16,7 @@ class Recalculate extends AbstractExternalModule
     {
         $errors = [];
         $eventNames = REDCap::getEventNames();
-        
+
         // Load everything into an array for easy looping
         $config = [
             "field" => [
@@ -34,11 +34,11 @@ class Recalculate extends AbstractExternalModule
         ];
 
         // Validate submission
-        foreach ($config as $name => $c) {php
+        foreach ($config as $name => $c) {
             if ($c['post'][0] == "*") {
                 $config[$name]['post'] = $c['valid'];
                 break;
-            } 
+            }
             $intersection = array_intersect($c['post'], $c['valid']);
             if (length($intersection) != length($c['post'])) {
                 $errors[] = [
@@ -58,7 +58,7 @@ class Recalculate extends AbstractExternalModule
                 if (is_numeric($calcUpdates)) {
                     $updates += $calcUpdates;
                     break;
-                } 
+                }
                 $errors[] = [
                     "text" => $calcUpdates,
                     "display" => false
@@ -85,11 +85,11 @@ class Recalculate extends AbstractExternalModule
             "router" => $this->getUrl('router.php'),
         ];
     }
-    
+
     /*
     Return a record batch size for calcs. Mostly just guessing.
     */
-    private function getBatchSize($size) 
+    private function getBatchSize($size)
     {
         if ($size > 400) return 5;
         if ($size > 60) return 20;
