@@ -16,6 +16,8 @@ class Recalculate extends AbstractExternalModule
     {
         $errors = [];
         $eventNames = REDCap::getEventNames();
+        
+        // Load everything into an array for easy looping
         $config = [
             "field" => [
                 "post" => array_map('trim', explode(',', $fields)),
@@ -31,44 +33,36 @@ class Recalculate extends AbstractExternalModule
             ]
         ];
 
-        // Double check validation for everything
-        foreach ($config as $name => $c) {
+        // Validate submission
+        foreach ($config as $name => $c) {php
             if ($c['post'][0] == "*") {
                 $config[$name]['post'] = $c['valid'];
-            } else {
-                $intersection = array_intersect($c['post'], $c['valid']);
-                if (length($intersection) != length($c['post'])) {
-                    $errors[] = [
-                        "text" => str_replace("_", $name, $this->tt('label_record')),
-                        "display" => true
-                    ];
-                }
+                break;
+            } 
+            $intersection = array_intersect($c['post'], $c['valid']);
+            if (length($intersection) != length($c['post'])) {
+                $errors[] = [
+                    "text" => str_replace("_", $name, $this->tt('label_record')),
+                    "display" => true
+                ];
             }
-        }
-
-        // Find a batch size (literally just guessing)
-        $batchSize = 100;
-        $size = $config['fields']['size'];
-        if ($size > 400) {
-            $batchSize = 5;
-        } else if ($size > 60) {
-            $batchSize = 20;
         }
 
         // Execute Calc
         $updates = 0;
+        $batchSize = $this->getBatchSize(count($config['fields']['post']));
         $recordBatches = array_chunk($config['record']['post'], $batchSize);
-        foreach ($recordBatches as $recordSet) {
+        foreach ($recordBatches as $recordSubset) {
             foreach ($config['event']['post'] as $event_id) {
-                $calcUpdates = Calculate::saveCalcFields($recordSet, $config['fields']['post'], $event_id);
+                $calcUpdates = Calculate::saveCalcFields($recordSubset, $config['fields']['post'], $event_id);
                 if (is_numeric($calcUpdates)) {
                     $updates += $calcUpdates;
-                } else {
-                    $errors[] = [
-                        "text" => $calcUpdates,
-                        "display" => false
-                    ];
-                }
+                    break;
+                } 
+                $errors[] = [
+                    "text" => $calcUpdates,
+                    "display" => false
+                ];
             }
         }
 
@@ -90,6 +84,16 @@ class Recalculate extends AbstractExternalModule
             "csrf"   => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
         ];
+    }
+    
+    /*
+    Return a record batch size for calcs. Mostly just guessing.
+    */
+    private function getBatchSize($size) 
+    {
+        if ($size > 400) return 5;
+        if ($size > 60) return 20;
+        return 100;
     }
 
     /*
