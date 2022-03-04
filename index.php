@@ -61,6 +61,14 @@
             </button>
         </div>
     </div>
+    <div id="logRow" class="row p-2 collapse">
+        <div class="offset-2 col-10">
+            <span>
+                <textarea id="recalcLog" name="recalcLog" cols="40" rows="20" class="form-control" disabled="" style="font-size:12px"></textarea>
+                <i data-toggle="collapse" data-target="#logRow" class="fa fa-times" aria-hidden="true" style="cursor:pointer;position:absolute;top:0.5rem;right:1.5rem"></i>
+            </span>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -86,6 +94,7 @@
         glo.recordBatches = [];
         glo.eventCache = "";
         glo.fieldCache = ""
+        glo.time = null;
         const $calcBtn = $("#recalc");
         const $eventsSelect = $("#events");
         const $fieldsSelect = $("#fields");
@@ -94,6 +103,8 @@
         const $allEvents = $("#allEvents");
         const $allFields = $("#allFields");
         const $bSize = $("#batchSize");
+        const $logRow = $("#logRow");
+        const $log = $("#recalcLog");
 
         // Toggle loading ring
         function toggleBtn() {
@@ -169,9 +180,12 @@
 
             // Send request
             toggleBtn();
+            $log.val("");
             glo.totalChanges = 0;
             glo.eventCache = events.join();
             glo.fieldCache = fields.join();
+            glo.batchNumber = 1;
+            glo.time = new Date();
             glo.recordBatches = batchArray(records, glo.batchSize).reverse();
             sendCalcRequest(glo.recordBatches.pop(), glo.eventCache, glo.fieldCache);
         });
@@ -232,11 +246,14 @@
                         return;
                     }
 
+                    // For any valid response, log and update
                     glo.totalChanges += data.changes;
-                    // TODO we need to show more info about what happened
+                    $log.val(`${$log.val()}Batch ${glo.batchNumber}\n  Records ${data.records.join(', ')}\n`);
+                    glo.batchNumber += 1;
 
                     // Multi batch with more to send
                     if (glo.batchSize > 0 && glo.recordBatches.length) {
+                        $logRow.collapse("show");
                         sendCalcRequest(glo.recordBatches.pop(), glo.eventCache, glo.fieldCache);
                         return;
                     }
@@ -248,6 +265,8 @@
                         icon: 'success',
                         title: "<?= $module->tt('msg_success'); ?>".replace('_', glo.totalChanges)
                     });
+                    const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
+                    $log.val(`${glo.totalChanges} total changes in ${rounddown(secondsSpent/60)}minutes ${round(secondsSpent%60)}seconds`);
                 }
             });
         }
