@@ -1,12 +1,7 @@
 <link rel='stylesheet' href='<?= $module->getURL('loading.min.css'); ?>'>
-<style>
-    #center {
-        overflow-x: hidden;
-    }
-</style>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 
-<div id="recalcEm" class="container float-left" style="max-width:800px">
+<div class="container float-left" style="max-width:800px">
     <div class="row p-2">
         <div class="col-12">
             <p>
@@ -18,7 +13,7 @@
         <label for="records" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_record'); ?></label>
         <div class="col-10">
             <input id="records" name="records" placeholder="record_1, record_2 etc" type="text" class="form-control">
-            <div class="custom-control custom-switch float-right">
+            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all records for recalculation">
                 <input type="checkbox" class="custom-control-input" id="allRecords" data-state="0">
                 <label class="custom-control-label" for="allRecords"></label>
             </div>
@@ -29,7 +24,7 @@
         <div class="col-10">
             <select multiple="multiple" id="events" name="events" class="custom-select">
             </select>
-            <div class="custom-control custom-switch float-right">
+            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all events for recalculation">
                 <input type="checkbox" class="custom-control-input" id="allEvents" data-state="0">
                 <label class="custom-control-label" for="allEvents"></label>
             </div>
@@ -40,16 +35,28 @@
         <div class="col-10">
             <select id="fields" name="fields" class="custom-select" multiple="multiple">
             </select>
-            <div class="custom-control custom-switch float-right">
+            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all fields for recalculation">
                 <input type="checkbox" class="custom-control-input" id="allFields" data-state="0">
                 <label class="custom-control-label" for="allFields"></label>
             </div>
         </div>
     </div>
     <div class="row p-2">
+        <div class="offset-2  col-10">
+            <a class="color-primary font-weight-bold" style="cursor:pointer" data-toggle="collapse" data-target="#batchSizeRow"><?= $module->tt('button_advanced'); ?> <i class="fa fa-arrow-down"></i></a>
+        </div>
+    </div>
+    <div id="batchSizeRow" class="row p-2 collapse">
+        <label for="batchSize" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_batch'); ?></label>
+        <div class="col-10">
+            <input id="batchSize" name="batchSize" placeholder="all" type="text" aria-describedby="batchSizeHelpBlock" class="form-control">
+            <span id="batchSizeHelpBlock" class="form-text text-muted"><?= $module->tt('label_batch_help'); ?></span>
+        </div>
+    </div>
+    <div class="row p-2">
         <div class="offset-2 col-10">
             <button id="recalc" name="submit" type="submit" class="btn btn-primary float-right">
-                <span class="btnText"> <?= $module->tt('button'); ?> </span>
+                <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
                 <i class="ld ld-spin ld-ring" style="display:none"></i>
             </button>
         </div>
@@ -95,6 +102,14 @@
             $calcBtn.prop('disabled', true);
             setTimeout(() => $calcBtn.prop('disabled', false), 2500);
         }
+
+        // Advanced Button toggle
+        $("#advancedRow").on('click', () => {
+
+        });
+
+        // Enable popovers
+        $('[data-toggle="popover"]').popover();
 
         // Force the submit button to static width
         $calcBtn.css('width', $calcBtn.css('width'));
