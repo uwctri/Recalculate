@@ -69,7 +69,8 @@ class Recalculate extends AbstractExternalModule
         // Return values
         echo json_encode([
             'changes' => $updates,
-            'errors' => $errors
+            'errors' => $errors,
+            'records' => $config['record']['post']
         ]);
     }
 

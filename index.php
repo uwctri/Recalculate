@@ -65,8 +65,6 @@
 
 <script>
     (() => {
-        const settings = <?= json_encode($module->loadSettings()); ?>;
-
         // Pop-up config
         const Toast = Swal.mixin({
             toast: true,
@@ -81,9 +79,13 @@
         });
 
         // Static refs and config
-        let isLongitudinal = true;
-        let batchSize = 1;
-        const label_length = 46;
+        let glo = <?= json_encode($module->loadSettings()); ?>;
+        glo.totalChanges = 0;
+        glo.isLongitudinal = true;
+        glo.batchSize = 0;
+        glo.recordBatches = [];
+        glo.eventCache = "";
+        glo.fieldCache = ""
         const $calcBtn = $("#recalc");
         const $eventsSelect = $("#events");
         const $fieldsSelect = $("#fields");
@@ -91,7 +93,7 @@
         const $allRecords = $("#allRecords");
         const $allEvents = $("#allEvents");
         const $allFields = $("#allFields");
-        const $batchSize = $("#batchSize");
+        const $bSize = $("#batchSize");
 
         // Toggle loading ring
         function toggleBtn() {
@@ -105,37 +107,40 @@
             setTimeout(() => $calcBtn.prop('disabled', false), 2500);
         }
 
-        // Advanced Button toggle
-        $("#advancedRow").on('click', () => {
+        // Util func to batch an array
+        function batchArray(arr, size) {
+            if (size >= arr.length || size < 1) return [arr];
+            const chunks = [];
+            while (arr.length) {
+                const chunk = arr.slice(0, size);
+                chunks.push(chunk);
+                arr = arr.slice(size);
+            };
+            return chunks;
+        }
 
-        });
-
-        // Enable popovers
+        // Enable popovers, static button width, clear all prev values
         $('[data-toggle="popover"]').popover();
-
-        // Force the submit button to static width
         $calcBtn.css('width', $calcBtn.css('width'));
-
-        // Force all checkboxes to default to off (browsers will remember last state)
-        $("input").prop("checked", false);
+        $("#center input").prop("checked", false).val("");
 
         // Build out event options
         const eventBox = document.getElementById('events');
-        $.each(settings.events, (id, name) => {
+        $.each(glo.events, (id, name) => {
             let newOption = new Option(name, id);
             eventBox.add(newOption);
         });
 
         // Hide the events if we only have 1
-        if (Object.keys(settings.events).length < 2) {
-            isLongitudinal = false;
+        if (Object.keys(glo.events).length < 2) {
+            glo.isLongitudinal = false;
             $eventsSelect.closest('.row').hide();
             $eventsSelect.val($eventsSelect.find("option").val());
         }
 
         // Build out field options
         const fieldBox = document.getElementById('fields');
-        $.each(settings.fields, (id, name) => {
+        $.each(glo.fields, (id, name) => {
             let newOption = new Option(`${id} : ${name}`, id);
             fieldBox.add(newOption);
         });
@@ -143,13 +148,14 @@
         // Button trigger
         $calcBtn.on('click', () => {
 
-            batchSize = $batchSize.val();
+            glo.batchSize = $bSize.change().val();
             const allFields = $allFields.is(':checked');
             const allEvents = $allEvents.is(':checked');
 
             const fields = allFields ? ['*'] : $fieldsSelect.val();
-            const events = (allEvents || !isLongitudinal) ? ['*'] : $eventsSelect.val();
-            const records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
+            const events = (allEvents || !glo.isLongitudinal) ? ['*'] : $eventsSelect.val();
+            let records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
+            records = records[0] == '*' ? glo.records : records;
 
             // Color missing fields (validation)
             $fieldsSelect.addClass(fields.length ? '' : 'is-invalid');
@@ -163,8 +169,11 @@
 
             // Send request
             toggleBtn();
-            // TODO 
-
+            glo.totalChanges = 0;
+            glo.eventCache = events.join();
+            glo.fieldCache = fields.join();
+            glo.recordBatches = batchArray(records, glo.batchSize).reverse();
+            sendCalcRequest(glo.recordBatches.pop(), glo.eventCache, glo.fieldCache);
         });
 
         // All Records toggle
@@ -181,18 +190,19 @@
         $recordsText.on('change', () => $recordsText.removeClass('is-invalid'));
         $eventsSelect.on('change', () => $eventsSelect.removeClass('is-invalid'));
         $fieldsSelect.on('change', () => $fieldsSelect.removeClass('is-invalid'));
+        $bSize.on('change', () => isInteger($bSize.val(), true) ? $bSize.removeClass('is-invalid') : $bSize.val(""));
 
         // Ajax for the post
         function sendCalcRequest(records, events, fields) {
             $.ajax({
                 method: 'POST',
-                url: settings.router,
+                url: glo.router,
                 data: {
                     route: 'recalculate',
                     records: records.join(),
-                    events: events.join(),
-                    fields: fields.join(),
-                    redcap_csrf_token: settings.csrf
+                    events: events,
+                    fields: fields,
+                    redcap_csrf_token: glo.csrf
                 },
 
                 // Only occurs on network or technical issue
@@ -207,9 +217,7 @@
 
                 // Response returned from server
                 success: (data) => {
-                    // TODO edit to support multiple batches
-                    toggleBtn();
-                    timeoutBtn();
+
                     data = JSON.parse(data);
                     console.log(data);
 
@@ -221,15 +229,25 @@
                                 title: err.display ? err.text : "<?= $module->tt('error_unknown'); ?>"
                             });
                         });
+                        return;
                     }
 
-                    // No errors, everything went well
-                    else {
-                        Toast.fire({
-                            icon: 'success',
-                            title: "<?= $module->tt('msg_success'); ?>".replace('_', data.changes)
-                        });
+                    glo.totalChanges += data.changes;
+                    // TODO we need to show more info about what happened
+
+                    // Multi batch with more to send
+                    if (glo.batchSize > 0 && glo.recordBatches.length) {
+                        sendCalcRequest(glo.recordBatches.pop(), glo.eventCache, glo.fieldCache);
+                        return;
                     }
+
+                    // Single post or done with posts
+                    toggleBtn();
+                    timeoutBtn();
+                    Toast.fire({
+                        icon: 'success',
+                        title: "<?= $module->tt('msg_success'); ?>".replace('_', glo.totalChanges)
+                    });
                 }
             });
         }
