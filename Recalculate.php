@@ -78,9 +78,11 @@ class Recalculate extends AbstractExternalModule
     */
     public function loadSettings()
     {
+        $events = REDCap::getEventNames();
         return [
-            "events" => REDCap::getEventNames(),
+            "events" => $events,
             "fields" => $this->getAllCalcFields(),
+            "records" => $this->getAllRecordIds($events),
             "csrf"   => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
         ];

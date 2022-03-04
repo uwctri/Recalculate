@@ -82,6 +82,7 @@
 
         // Static refs and config
         let isLongitudinal = true;
+        let batchSize = 1;
         const label_length = 46;
         const $calcBtn = $("#recalc");
         const $eventsSelect = $("#events");
@@ -90,6 +91,7 @@
         const $allRecords = $("#allRecords");
         const $allEvents = $("#allEvents");
         const $allFields = $("#allFields");
+        const $batchSize = $("#batchSize");
 
         // Toggle loading ring
         function toggleBtn() {
@@ -141,6 +143,7 @@
         // Button trigger
         $calcBtn.on('click', () => {
 
+            batchSize = $batchSize.val();
             const allFields = $allFields.is(':checked');
             const allEvents = $allEvents.is(':checked');
 
@@ -158,9 +161,29 @@
                 return;
             }
 
-            // Show loading icon
+            // Send request
             toggleBtn();
+            // TODO 
 
+        });
+
+        // All Records toggle
+        $allRecords.on('click', () => {
+            const all = $allRecords.is(':checked');
+            $recordsText.val(all ? '*' : '').attr('disabled', all).removeClass('is-invalid');
+        });
+
+        // All Events & Fields toggle
+        $allEvents.on('click', () => $eventsSelect.val([]).attr('disabled', $allEvents.is(':checked')).removeClass('is-invalid'));
+        $allFields.on('click', () => $fieldsSelect.val([]).attr('disabled', $allFields.is(':checked')).removeClass('is-invalid'));
+
+        // Remove validation decoration on change
+        $recordsText.on('change', () => $recordsText.removeClass('is-invalid'));
+        $eventsSelect.on('change', () => $eventsSelect.removeClass('is-invalid'));
+        $fieldsSelect.on('change', () => $fieldsSelect.removeClass('is-invalid'));
+
+        // Ajax for the post
+        function sendCalcRequest(records, events, fields) {
             $.ajax({
                 method: 'POST',
                 url: settings.router,
@@ -184,7 +207,7 @@
 
                 // Response returned from server
                 success: (data) => {
-
+                    // TODO edit to support multiple batches
                     toggleBtn();
                     timeoutBtn();
                     data = JSON.parse(data);
@@ -209,21 +232,6 @@
                     }
                 }
             });
-        });
-
-        // All Records toggle
-        $allRecords.on('click', () => {
-            const all = $allRecords.is(':checked');
-            $recordsText.val(all ? '*' : '').attr('disabled', all).removeClass('is-invalid');
-        });
-
-        // All Events & Fields toggle
-        $allEvents.on('click', () => $eventsSelect.val([]).attr('disabled', $allEvents.is(':checked')).removeClass('is-invalid'));
-        $allFields.on('click', () => $fieldsSelect.val([]).attr('disabled', $allFields.is(':checked')).removeClass('is-invalid'));
-
-        // Remove validation decoration on change
-        $recordsText.on('change', () => $recordsText.removeClass('is-invalid'));
-        $eventsSelect.on('change', () => $eventsSelect.removeClass('is-invalid'));
-        $fieldsSelect.on('change', () => $fieldsSelect.removeClass('is-invalid'));
+        }
     })();
 </script>
