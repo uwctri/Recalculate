@@ -88,13 +88,7 @@
 
         // Static refs and config
         let glo = <?= json_encode($module->loadSettings()); ?>;
-        glo.totalChanges = 0;
         glo.isLongitudinal = true;
-        glo.batchSize = 0;
-        glo.recordBatches = [];
-        glo.eventCache = "";
-        glo.fieldCache = ""
-        glo.time = null;
         const $calcBtn = $("#recalc");
         const $eventsSelect = $("#events");
         const $fieldsSelect = $("#fields");
@@ -248,7 +242,7 @@
 
                     // For any valid response, log and update
                     glo.totalChanges += data.changes;
-                    $log.val(`${$log.val()}Batch ${glo.batchNumber}\n  Records ${data.records.join(', ')}\n`);
+                    $log.val(`${$log.val()}Batch ${glo.batchNumber}\nRecords ${data.records.join(', ')}\n`);
                     glo.batchNumber += 1;
 
                     // Multi batch with more to send

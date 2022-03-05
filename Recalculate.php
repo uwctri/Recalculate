@@ -37,6 +37,7 @@ class Recalculate extends AbstractExternalModule
         foreach ($config as $name => $c) {
             if ($c['post'][0] == "*") {
                 $config[$name]['post'] = $c['valid'];
+                $config[$name]['all'] = true;
                 break;
             }
             $intersection = array_intersect($c['post'], $c['valid']);
@@ -67,10 +68,11 @@ class Recalculate extends AbstractExternalModule
         }
 
         // Return values
+        $records = $config['record']['all'] ? ['*'] : $config['record']['post'];
         echo json_encode([
             'changes' => $updates,
             'errors' => $errors,
-            'records' => $config['record']['post']
+            'records' => $records
         ]);
     }
 
