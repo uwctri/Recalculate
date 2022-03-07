@@ -64,7 +64,7 @@
     <div id="logRow" class="row p-2 collapse">
         <div class="offset-2 col-10">
             <span>
-                <textarea id="recalcLog" name="recalcLog" cols="40" rows="20" class="form-control" disabled="" style="font-size:12px"></textarea>
+                <textarea id="recalcLog" name="recalcLog" cols="40" rows="20" class="form-control" disabled="" style="font-size:12px;font-family:monospace"></textarea>
                 <i data-toggle="collapse" data-target="#logRow" class="fa fa-times" aria-hidden="true" style="cursor:pointer;position:absolute;top:0.5rem;right:1.5rem"></i>
             </span>
         </div>
@@ -260,7 +260,7 @@
                         title: "<?= $module->tt('msg_success'); ?>".replace('_', glo.totalChanges)
                     });
                     const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
-                    $log.val(`${glo.totalChanges} total changes in ${rounddown(secondsSpent/60)}minutes ${round(secondsSpent%60)}seconds`);
+                    $log.val(`${$log.val()}${glo.totalChanges} total changes in ${rounddown(secondsSpent/60)}minutes ${round(secondsSpent%60)}seconds`);
                 }
             });
         }
