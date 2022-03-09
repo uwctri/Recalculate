@@ -23,14 +23,7 @@
             }
         ]
     },
-    "project-settings": [
-        {
-            "key": "info",
-            "name": "This module has no configuration. You can vist the 'Re Calculate' page under 'External Modules' to use the module.",
-            "tt_name": "module_info",
-            "type": "descriptive"
-        }
-    ],
+    "project-settings": [],
     "compatibility": {
         "redcap-version-min": "12.0.4"
     }

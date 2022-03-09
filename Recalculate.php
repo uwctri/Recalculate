@@ -9,6 +9,22 @@ use Calculate;
 class Recalculate extends AbstractExternalModule
 {
     /*
+    Redcap Hook. Allow nav to the index page only if user rights are met
+    */
+    public function redcap_module_link_check_display($project_id, $link)
+    {
+        return reset(Redcap::getUserRights())['data_quality_execute'];
+    }
+
+    /*
+    Redcap Hook. Prevent opening module config, we have none.
+    */
+    public function redcap_module_configure_button_display()
+    {
+        return null;
+    }
+
+    /*
     Performs core functionality. Invoked via router/ajax.
     Fire the native redcap calculated field routines.
     */
@@ -87,7 +103,7 @@ class Recalculate extends AbstractExternalModule
             "fields" => $this->getAllCalcFields(),
             "records" => $this->getAllRecordIds($events),
             "csrf"   => $this->getCSRFToken(),
-            "router" => $this->getUrl('router.php'),
+            "router" => $this->getUrl('router.php')
         ];
     }
 
