@@ -14,12 +14,12 @@ This module exposes a simple API so recalculations may be triggered via a post m
 
 `POST /api/?type=module&prefix=recalculate&page=api&NOAUTH`
 
-|**Parameter**|              **Description**                     | **Type** |
-|:-----------:|:------------------------------------------ -----:|:--------:|
-|   token     |      API Token from module configuration         |  string  |
-|   fields    |       Unique field names or '*' for all          |  array   |
-|   events    |        Event IDs or '*' for all                  |  array   |
-|   records   |           Record IDs or '*' for all              |  array   |
-|   pid       |           Project ID                             |  int     |
+|**Parameter**|              **Description**                    | **Type** |
+|:-----------:|:-----------------------------------------------:|:--------:|
+|   token     |      API Token from module configuration        |  string  |
+|   fields    |       Unique field names or '*' for all         |  array   |
+|   events    |        Event IDs or '*' for all                 |  array   |
+|   records   |           Record IDs or '*' for all             |  array   |
+|   pid       |           Project ID                            |  int     |
 
 No defaults are assumed by the api, thus **all fields are requried**. The API token is generated per project and can be found in the module configuration. The token can be changed, but a blank token will always be rejected by the API.
