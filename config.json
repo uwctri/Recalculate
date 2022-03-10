@@ -12,7 +12,16 @@
             "institution": "Abt Associates"
         }
     ],
+    "permissions": [
+        "redcap_module_project_enable"
+    ],
     "framework-version": 8,
+    "no-auth-pages": [
+        "api"
+    ],
+    "no-csrf-pages": [
+        "api"
+    ],
     "links": {
         "project": [
             {
@@ -23,7 +32,14 @@
             }
         ]
     },
-    "project-settings": [],
+    "project-settings": [
+        {
+            "key": "api_token",
+            "name": "<b>API token</b><br>This token is project specific and visible to any user able to execute data quality rules",
+            "tt_name": "module_token",
+            "type": "text"
+        }
+    ],
     "compatibility": {
         "redcap-version-min": "12.0.4"
     }

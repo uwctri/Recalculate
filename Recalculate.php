@@ -13,22 +13,32 @@ class Recalculate extends AbstractExternalModule
     */
     public function redcap_module_link_check_display($project_id, $link)
     {
-        return reset(Redcap::getUserRights())['data_quality_execute'];
+        return $this->userHasRights();
     }
 
     /*
-    Redcap Hook. Prevent opening module config, we have none.
+    Redcap Hook. Prevent opening module config, if no user rights
     */
     public function redcap_module_configure_button_display()
     {
-        return null;
+        return $this->userHasRights();
     }
 
     /*
-    Performs core functionality. Invoked via router/ajax.
+    Redcap Hook. Create a reasonable project API key when enabled.
+    */
+    public function redcap_module_project_enable()
+    {
+        if (empty($this->getProjectSetting('api_token'))) {
+            $this->setProjectSetting('api_token', $this->generateToken());
+        }
+    }
+
+    /*
+    Performs core functionality. Invoked via router/ajax/api.
     Fire the native redcap calculated field routines.
     */
-    public function recalculate($fields, $events, $records)
+    public function recalculate($fields, $events, $records, $pid)
     {
         $errors = [];
         $eventNames = REDCap::getEventNames();
@@ -36,15 +46,15 @@ class Recalculate extends AbstractExternalModule
         // Load everything into an array for easy looping
         $config = [
             "field" => [
-                "post" => array_map('trim', explode(',', $fields)),
+                "post" => array_map('trim', json_decode($fields, true)),
                 "valid" => array_keys($this->getAllCalcFields()),
             ],
             "record" => [
-                "post" => array_map('trim', explode(',', $records)),
+                "post" => array_map('trim', json_decode($records, true)),
                 "valid" => $this->getAllRecordIds($eventNames),
             ],
             "event" => [
-                "post" => array_map('trim', explode(',', $events)),
+                "post" => array_map('trim', json_decode($events, true)),
                 "valid" => array_keys($eventNames),
             ]
         ];
@@ -58,8 +68,9 @@ class Recalculate extends AbstractExternalModule
             }
             $intersection = array_intersect($c['post'], $c['valid']);
             if (length($intersection) != length($c['post'])) {
+                $config['record']['post'] = []; // Prevent calcs from occuring
                 $errors[] = [
-                    "text" => str_replace("_", $name, $this->tt('label_record')),
+                    "text" => str_replace("_", $name, $this->tt('error_invalid')),
                     "display" => true
                 ];
             }
@@ -118,15 +129,21 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Return all all field names that are configured as "calc"
+    Return all field names that are configured as "calc" or via
+    a calc action tag
     */
     private function getAllCalcFields()
     {
         global $Proj;
         $fields = [];
         foreach ($Proj->metadata as $attr) {
-            if ($attr['element_type'] == 'calc') {
-                $fields[$attr['field_name']] = $attr['element_label'];
+            $actionTag = strtoupper($attr['misc'] ?? "");
+            if (
+                $attr['element_type'] == 'calc' ||
+                strpos($actionTag, "@CALCDATE") !== false ||
+                strpos($actionTag, "@CALCTEXT") !== false
+            ) {
+                $fields[$attr['field_name']] = strip_tags($attr['element_label']);
             }
         }
         return $fields;
@@ -142,5 +159,21 @@ class Recalculate extends AbstractExternalModule
             $events = REDCap::getEventNames();
         }
         return array_keys(REDCap::getData('array', null, REDCap::getRecordIdField(), array_keys($events)[0]));
+    }
+
+    /*
+    Check if current user is allowed to use the module
+    */
+    private function userHasRights()
+    {
+        return reset(Redcap::getUserRights())['data_quality_execute'] == "1";
+    }
+
+    /*
+    Generate a reasonable token
+    */
+    private function generateToken()
+    {
+        return strtoupper(md5(USERID . APP_PATH_WEBROOT_FULL  . generateRandomHash(mt_rand(64, 128))));
     }
 }

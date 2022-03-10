@@ -88,6 +88,7 @@
 
         // Static refs and config
         let glo = <?= json_encode($module->loadSettings()); ?>;
+        console.log(glo);
         glo.isLongitudinal = true;
         const $calcBtn = $("#recalc");
         const $eventsSelect = $("#events");
@@ -176,8 +177,8 @@
             toggleBtn();
             $log.val("");
             glo.totalChanges = 0;
-            glo.eventCache = events.join();
-            glo.fieldCache = fields.join();
+            glo.eventCache = JSON.stringify(events);
+            glo.fieldCache = JSON.stringify(fields);
             glo.batchNumber = 1;
             glo.time = new Date();
             glo.recordBatches = batchArray(records, glo.batchSize).reverse();
@@ -207,7 +208,7 @@
                 url: glo.router,
                 data: {
                     route: 'recalculate',
-                    records: records.join(),
+                    records: JSON.stringify(records),
                     events: events,
                     fields: fields,
                     redcap_csrf_token: glo.csrf
