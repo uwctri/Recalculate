@@ -17,11 +17,12 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Redcap Hook. Prevent opening module config, if no user rights
+    Redcap Hook. Prevent opening module config on the project if no user rights
+    Always allow in the control center
     */
     public function redcap_module_configure_button_display()
     {
-        return $this->userHasRights();
+        return $this->isPage('ExternalModules/manager/control_center.php') || $this->userHasRights();
     }
 
     /*
