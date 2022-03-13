@@ -13,7 +13,6 @@
         }
     ],
     "permissions": [
-        "redcap_module_project_enable"
     ],
     "framework-version": 8,
     "no-auth-pages": [
