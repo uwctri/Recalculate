@@ -39,10 +39,11 @@ class Recalculate extends AbstractExternalModule
     Performs core functionality. Invoked via router/ajax/api.
     Fire the native redcap calculated field routines.
     */
-    public function recalculate($fields, $events, $records, $pid)
+    public function recalculate($fields, $events, $records)
     {
         $errors = [];
         $eventNames = REDCap::getEventNames();
+        $page = $_GET['page'];
 
         // Load everything into an array for easy looping
         $config = [
@@ -59,6 +60,10 @@ class Recalculate extends AbstractExternalModule
                 "valid" => array_keys($eventNames),
             ]
         ];
+
+        // Log the event
+        $action = $page == "api" ? "api" : "direct";
+        $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
 
         // Validate submission
         foreach ($config as $name => $c) {
@@ -108,8 +113,40 @@ class Recalculate extends AbstractExternalModule
         echo json_encode([
             'changes' => $updates,
             'errors' => $errors,
-            'records' => $records
+            'records' => $records,
+            'source' => $page
         ]);
+    }
+
+    /*
+    Log an action for the EM
+    */
+    private function projectLog($action, $fieldList, $eventList, $recordList)
+    {
+        $sql = null;
+        $record = count($recordList) == 1 && $recordList[0] != "*" ? $recordList[0] : NULL;
+        $event = count($eventList) == 1 && $eventList[0] != "*" ? $eventList[0] : NULL;
+        $config = [
+            "direct" => [
+                "blurb" => "Recalculate",
+                "changes" => "Perfromed recalc for ..."
+            ],
+            "api" => [
+                "blurb" => "Recalculate API",
+                "changes" => "Perfromed recalc for ..."
+            ],
+            "preview" => [
+                "blurb" => "Recalculate Preview",
+                "changes" => "Generated preview for ..."
+            ]
+        ];
+        if (!empty($config[$action])) {
+            $fields = implode(', ', $fieldList);
+            $events = implode(', ', $eventList);
+            $records = implode(', ', $recordList);
+            $changes = $config[$action]["changes"] . "\nFields = $fields\nEvents = $events\nRecords = $records";
+            REDCap::logEvent($config[$action]["blurb"], $changes, $sql, $record, $event);
+        }
     }
 
     /*

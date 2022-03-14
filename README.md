@@ -26,5 +26,4 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 
 ## TODO
 
-* Preview of changes to be made without saving. Persist after leaving page?
-* Additional logging around an API hit, generating the above preview, or starting a recalc
+* Preview of changes to be made without saving. Persist after leaving page? Add logging for this.

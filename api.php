@@ -8,7 +8,7 @@ if (!empty($client_token) && !empty($server_token) && ($client_token == $server_
     if (!defined('PROJECT_ID')) {
         define('PROJECT_ID', $pid);
     }
-    $module->recalculate($_POST['fields'], $_POST['events'], $_POST['records'], $pid);
+    $module->recalculate($_POST['fields'], $_POST['events'], $_POST['records']);
     exit;
 }
 
