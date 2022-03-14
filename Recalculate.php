@@ -47,29 +47,35 @@ class Recalculate extends AbstractExternalModule
         // Load everything into an array for easy looping
         $config = [
             "field" => [
-                "post" => array_map('trim', json_decode($fields, true)),
+                "post" => array_map('trim', json_decode($fields, true) ?? []),
                 "valid" => array_keys($this->getAllCalcFields()),
             ],
             "record" => [
-                "post" => array_map('trim', json_decode($records, true)),
+                "post" => array_map('trim', json_decode($records, true) ?? []),
                 "valid" => $this->getAllRecordIds($eventNames),
             ],
             "event" => [
-                "post" => array_map('trim', json_decode($events, true)),
+                "post" => array_map('trim', json_decode($events, true) ?? []),
                 "valid" => array_keys($eventNames),
             ]
         ];
 
         // Validate submission
         foreach ($config as $name => $c) {
+            if (count($c['post']) == 0) {
+                $errors[] = [
+                    "text" => str_replace("_", $name, $this->tt('error_missing')),
+                    "display" => true
+                ];
+                continue;
+            }
             if ($c['post'][0] == "*") {
                 $config[$name]['post'] = $c['valid'];
                 $config[$name]['all'] = true;
-                break;
+                continue;
             }
             $intersection = array_intersect($c['post'], $c['valid']);
             if (length($intersection) != length($c['post'])) {
-                $config['record']['post'] = []; // Prevent calcs from occuring
                 $errors[] = [
                     "text" => str_replace("_", $name, $this->tt('error_invalid')),
                     "display" => true
@@ -79,19 +85,21 @@ class Recalculate extends AbstractExternalModule
 
         // Execute Calc
         $updates = 0;
-        $batchSize = $this->getBatchSize(count($config['fields']['post']));
-        $recordBatches = array_chunk($config['record']['post'], $batchSize);
-        foreach ($recordBatches as $recordSubset) {
-            foreach ($config['event']['post'] as $event_id) {
-                $calcUpdates = Calculate::saveCalcFields($recordSubset, $config['fields']['post'], $event_id);
-                if (is_numeric($calcUpdates)) {
-                    $updates += $calcUpdates;
-                    break;
+        if (count($errors) == 0) {
+            $batchSize = $this->getBatchSize(count($config['fields']['post']));
+            $recordBatches = array_chunk($config['record']['post'], $batchSize);
+            foreach ($recordBatches as $recordSubset) {
+                foreach ($config['event']['post'] as $event_id) {
+                    $calcUpdates = Calculate::saveCalcFields($recordSubset, $config['fields']['post'], $event_id);
+                    if (is_numeric($calcUpdates)) {
+                        $updates += $calcUpdates;
+                        break;
+                    }
+                    $errors[] = [
+                        "text" => $calcUpdates,
+                        "display" => false
+                    ];
                 }
-                $errors[] = [
-                    "text" => $calcUpdates,
-                    "display" => false
-                ];
             }
         }
 

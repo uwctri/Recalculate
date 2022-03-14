@@ -28,5 +28,3 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 
 * Preview of changes to be made without saving. Persist after leaving page?
 * Additional logging around an API hit, generating the above preview, or starting a recalc
-* API should return something
-* Make sure API reject poorly formatted posts
