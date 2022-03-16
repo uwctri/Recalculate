@@ -1,5 +1,5 @@
-<link rel='stylesheet' href='<?= $module->getURL('loading.min.css'); ?>'>
-<link rel='stylesheet' href='<?= $module->getURL('cookie.min.css'); ?>'>
+<link rel='stylesheet' href='<?= $module->getURL('js/loading.min.css'); ?>'>
+<link rel='stylesheet' href='<?= $module->getURL('js/cookie.min.css'); ?>'>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 <style>
     .dropdown-item:hover,
