@@ -51,13 +51,13 @@ class Recalculate extends AbstractExternalModule
                 "post" => array_map('trim', json_decode($fields, true) ?? []),
                 "valid" => array_keys($this->getAllCalcFields()),
             ],
-            "record" => [
-                "post" => array_map('trim', json_decode($records, true) ?? []),
-                "valid" => $this->getAllRecordIds($eventNames),
-            ],
             "event" => [
                 "post" => array_map('trim', json_decode($events, true) ?? []),
                 "valid" => array_keys($eventNames),
+            ],
+            "record" => [
+                "post" => array_map('trim', json_decode($records, true) ?? []),
+                "valid" => $this->getAllRecordIds($eventNames),
             ]
         ];
 

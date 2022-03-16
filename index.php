@@ -1,6 +1,21 @@
 <link rel='stylesheet' href='<?= $module->getURL('loading.min.css'); ?>'>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
+<style>
+    .dropdown-item:hover,
+    .dropdown-item:active {
+        outline: none;
+        background-color: #e9ecef;
+    }
 
+    #recalcBtnGroup .dropdown-item {
+        color: #212529;
+        font-size: 0.95rem;
+    }
+
+    #recalc {
+        padding-right: 0;
+    }
+</style>
 <div class="container float-left" style="max-width:800px">
     <div class="row p-2">
         <div class="col-12">
@@ -55,10 +70,19 @@
     </div>
     <div class="row p-2">
         <div class="offset-2 col-10">
-            <button id="recalc" name="submit" type="submit" class="btn btn-primary float-right">
-                <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
-                <i class="ld ld-spin ld-ring" style="display:none"></i>
-            </button>
+            <div id="recalcBtnGroup" class="btn-group float-right">
+                <button id="recalc" type="button" class="btn btn-primary">
+                    <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
+                    <i class="ld ld-spin ld-ring" style="display:none"></i>
+                </button>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#"><?= $module->tt('button_preview'); ?></a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                </div>
+            </div>
         </div>
     </div>
     <div id="logRow" class="row p-2 collapse">
@@ -88,9 +112,9 @@
 
         // Static refs and config
         let glo = <?= json_encode($module->loadSettings()); ?>;
-        console.log(glo);
         glo.isLongitudinal = true;
         const $calcBtn = $("#recalc");
+        const $calcGrp = $("#recalcBtnGroup")
         const $eventsSelect = $("#events");
         const $fieldsSelect = $("#fields");
         const $recordsText = $("#records");
