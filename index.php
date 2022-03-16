@@ -1,4 +1,5 @@
 <link rel='stylesheet' href='<?= $module->getURL('loading.min.css'); ?>'>
+<link rel='stylesheet' href='<?= $module->getURL('cookie.min.css'); ?>'>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 <style>
     .dropdown-item:hover,
@@ -10,10 +11,6 @@
     #recalcBtnGroup .dropdown-item {
         color: #212529;
         font-size: 0.95rem;
-    }
-
-    #recalc {
-        padding-right: 0;
     }
 </style>
 <div class="container float-left" style="max-width:800px">
@@ -71,7 +68,7 @@
     <div class="row p-2">
         <div class="offset-2 col-10">
             <div id="recalcBtnGroup" class="btn-group float-right">
-                <button id="recalc" type="button" class="btn btn-primary">
+                <button id="recalc" type="button" class="btn btn-primary pr-0">
                     <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
                     <i class="ld ld-spin ld-ring" style="display:none"></i>
                 </button>
@@ -88,8 +85,8 @@
     <div id="logRow" class="row p-2 collapse">
         <div class="offset-2 col-10">
             <span>
-                <textarea id="recalcLog" name="recalcLog" cols="40" rows="20" class="form-control" disabled="" style="font-size:12px;font-family:monospace"></textarea>
-                <i data-toggle="collapse" data-target="#logRow" class="fa fa-times" aria-hidden="true" style="cursor:pointer;position:absolute;top:0.5rem;right:1.5rem"></i>
+                <textarea id="recalcLog" name="recalcLog" cols="40" rows="20" class="form-control" disabled="" style="font-size:12px;font-family:monospace;scrollbar-width:thin;"></textarea>
+                <i data-toggle="collapse" data-target="#logRow" class="fa fa-times" aria-hidden="true" style="cursor:pointer;position:absolute;top:0.65rem;right:1.75rem"></i>
             </span>
         </div>
     </div>
@@ -206,6 +203,7 @@
             glo.batchNumber = 1;
             glo.time = new Date();
             glo.recordBatches = batchArray(records, glo.batchSize).reverse();
+            glo.totalBatches = glo.recordBatches.length;
             sendCalcRequest(glo.recordBatches.pop(), glo.eventCache, glo.fieldCache);
         });
 
@@ -267,7 +265,7 @@
 
                     // For any valid response, log and update
                     glo.totalChanges += data.changes;
-                    $log.val(`${$log.val()}Batch ${glo.batchNumber}\nRecords ${data.records.join(', ')}\n`);
+                    $log.val(`${$log.val()}Batch ${glo.batchNumber} of ${glo.totalBatches}\nRecords ${data.records.join(', ')}\n`);
                     glo.batchNumber += 1;
 
                     // Multi batch with more to send
@@ -285,7 +283,7 @@
                         title: "<?= $module->tt('msg_success'); ?>".replace('_', glo.totalChanges)
                     });
                     const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
-                    $log.val(`${$log.val()}${glo.totalChanges} total changes in ${rounddown(secondsSpent/60)}minutes ${round(secondsSpent%60)}seconds`);
+                    $log.val(`${$log.val()}${glo.totalChanges} total changes in ${rounddown(secondsSpent/60)} minutes ${round(secondsSpent%60)} seconds`);
                 }
             });
         }
