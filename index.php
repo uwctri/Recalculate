@@ -34,7 +34,7 @@
     <div class="row p-2">
         <label for="events" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_event'); ?></label>
         <div class="col-10">
-            <select multiple="multiple" id="events" name="events" class="custom-select">
+            <select multiple="multiple" id="events" name="events" class="custom-select" style="resize:vertical;scrollbar-width:thin;">
             </select>
             <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all events for recalculation">
                 <input type="checkbox" class="custom-control-input" id="allEvents" data-state="0">
@@ -45,7 +45,7 @@
     <div class="row p-2">
         <label for="fields" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_field'); ?></label>
         <div class="col-10">
-            <select id="fields" name="fields" class="custom-select" multiple="multiple">
+            <select id="fields" name="fields" class="custom-select" multiple="multiple" style="resize:vertical;scrollbar-width:thin;">
             </select>
             <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all fields for recalculation">
                 <input type="checkbox" class="custom-control-input" id="allFields" data-state="0">
