@@ -12,6 +12,21 @@
         color: #212529;
         font-size: 0.95rem;
     }
+
+    .detailsGrid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        grid-column-gap: 20px;
+        grid-row-gap: 0px;
+        color: #6d6d6d;
+        font-weight: bold;
+    }
+
+    .custom-select {
+        resize: vertical;
+        scrollbar-width: thin;
+    }
 </style>
 <div class="container float-left" style="max-width:800px">
     <div class="row p-2">
@@ -34,7 +49,7 @@
     <div class="row p-2">
         <label for="events" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_event'); ?></label>
         <div class="col-10">
-            <select multiple="multiple" id="events" name="events" class="custom-select" style="resize:vertical;scrollbar-width:thin;">
+            <select multiple="multiple" id="events" name="events" class="custom-select">
             </select>
             <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all events for recalculation">
                 <input type="checkbox" class="custom-control-input" id="allEvents" data-state="0">
@@ -45,7 +60,7 @@
     <div class="row p-2">
         <label for="fields" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_field'); ?></label>
         <div class="col-10">
-            <select id="fields" name="fields" class="custom-select" multiple="multiple" style="resize:vertical;scrollbar-width:thin;">
+            <select id="fields" name="fields" class="custom-select" multiple="multiple">
             </select>
             <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all fields for recalculation">
                 <input type="checkbox" class="custom-control-input" id="allFields" data-state="0">
@@ -55,7 +70,7 @@
     </div>
     <div class="row p-2">
         <div class="offset-2  col-10">
-            <a class="color-primary font-weight-bold" style="cursor:pointer" data-toggle="collapse" data-target="#batchSizeRow"><?= $module->tt('button_advanced'); ?> <i class="fa fa-arrow-down"></i></a>
+            <a class="color-primary font-weight-bold" role="button" data-toggle="collapse" data-target="#batchSizeRow"><?= $module->tt('button_advanced'); ?> <i class="fa fa-arrow-down"></i></a>
         </div>
     </div>
     <div id="batchSizeRow" class="row p-2 collapse">
@@ -66,7 +81,12 @@
         </div>
     </div>
     <div class="row p-2">
-        <div class="offset-2 col-10">
+        <div class="offset-2 col-6 detailsGrid">
+            <div>Batch N of M</div>
+            <div>Time Elapsed: 00:00</div>
+            <div style=" grid-area:2/1/3/3;white-space:nowrap;">Processing: record_1, record_2, record_3, rec...</div>
+        </div>
+        <div class="col-4">
             <div id="recalcBtnGroup" class="btn-group float-right">
                 <button id="recalc" type="button" class="btn btn-primary pr-0">
                     <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
@@ -80,14 +100,6 @@
                     <a class="dropdown-item" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a>
                 </div>
             </div>
-        </div>
-    </div>
-    <div id="logRow" class="row p-2 collapse">
-        <div class="offset-2 col-10">
-            <span>
-                <textarea id="recalcLog" name="recalcLog" cols="40" rows="20" class="form-control" disabled="" style="font-size:12px;font-family:monospace;scrollbar-width:thin;"></textarea>
-                <i data-toggle="collapse" data-target="#logRow" class="fa fa-times" aria-hidden="true" style="cursor:pointer;position:absolute;top:0.65rem;right:1.75rem"></i>
-            </span>
         </div>
     </div>
 </div>
@@ -119,17 +131,16 @@
         const $allEvents = $("#allEvents");
         const $allFields = $("#allFields");
         const $bSize = $("#batchSize");
-        const $logRow = $("#logRow");
-        const $log = $("#recalcLog");
+        const $details = $(".detailsGrid");
 
         // Toggle loading ring
-        function toggleBtn() {
+        const toggleBtn = () => {
             $calcBtn.find('.btnText').toggle();
             $calcBtn.find('.ld').toggle();
-        }
+        };
 
         // Util func to batch an array
-        function batchArray(arr, size) {
+        const batchArray = (arr, size) => {
             if (size >= arr.length || size < 1) return [arr];
             const chunks = [];
             while (arr.length) {
@@ -138,21 +149,43 @@
                 arr = arr.slice(size);
             };
             return chunks;
-        }
+        };
 
         // Interpolate Util functions for templates
         String.prototype.interpolate = function(params) {
             let newString = this;
-            Object.entries(params).forEach(function(replacePair) {
+            Object.entries(params).forEach((replacePair) => {
                 newString = newString.replaceAll(`{${replacePair[0]}}`, replacePair[1]);
             });
             return newString;
-        }
+        };
+
+        // Log util functions
+        const clearLog = () => $details.find("div").text("");
+        const updateLog = (batch, records) => {
+            const $divs = $details.find('div');
+            $divs.first().text("<?= $module->tt('log_batch'); ?>".interpolate({
+                batchNumber: batch,
+                totalBatches: glo.totalBatches
+            }));
+            $divs.last().text("<?= $module->tt('log_records'); ?>" + records.join(', ').slice(0, 70));
+        };
+        const startLogClock = () => {
+            glo.time = new Date();
+            glo.interval = setInterval(() => {
+                const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
+                const min = String(rounddown(secondsSpent / 60)).padStart(2, '0');
+                const sec = String(round(secondsSpent % 60)).padStart(2, '0');
+                $details.find('div').eq(1).text("<?= $module->tt('log_time'); ?>" + `${min}:${sec}`)
+            }, 1000);
+        };
+        const stopLogClock = () => clearInterval(glo.interval);
 
         // Enable popovers, static button width, clear all prev values
         $('[data-toggle="popover"]').popover();
         $calcBtn.css('width', $calcBtn.css('width'));
         $("#center input").prop("checked", false).val("");
+        clearLog();
 
         // Build out event options
         const eventBox = document.getElementById('events');
@@ -208,7 +241,8 @@
 
             // Send request
             toggleBtn();
-            $log.val("");
+            clearLog();
+            startLogClock();
             glo.run = true;
             glo.time = new Date();
             glo.recordBatches = batchArray(records, batchSize).reverse();
@@ -233,24 +267,21 @@
         $bSize.on('change', () => isInteger($bSize.val(), true) ? $bSize.removeClass('is-invalid') : $bSize.val(""));
 
         // Ajax for the post
-        function sendRequest(records, events, fields, preview, batchSize, batchNumber, totalChanges) {
+        const sendRequest = (records, events, fields, preview, batchSize, batchNumber, totalChanges) => {
 
             // Bail if cancel was called
             if (!glo.run) {
                 toggleBtn();
+                stopLogClock();
                 Toast.fire({
                     icon: 'info',
                     title: "<?= $module->tt('msg_cancel'); ?>"
                 });
-                const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
-                $log.val("<?= $module->tt('log_end'); ?>".interpolate({
-                    current: $log.val(),
-                    total: totalChanges,
-                    minute: rounddown(secondsSpent / 60),
-                    seconds: round(secondsSpent % 60)
-                }));
                 return;
             }
+
+            // Update the Detials area
+            updateLog(batchNumber, records);
 
             $.ajax({
                 method: 'POST',
@@ -308,17 +339,10 @@
 
                     // For any valid response, log and update
                     totalChanges += data.changes;
-                    $log.val("<?= $module->tt('log_line'); ?>".interpolate({
-                        current: $log.val(),
-                        batchNumber: batchNumber,
-                        totalBatches: glo.totalBatches,
-                        records: data.records.join(', ')
-                    }));
                     batchNumber += 1;
 
                     // Multi batch with more to send
                     if (batchSize > 0 && glo.recordBatches.length) {
-                        $logRow.collapse("show");
                         sendRequest(glo.recordBatches.pop(), events, fields, preview, batchSize, batchNumber, totalChanges);
                         return;
                     }
@@ -331,13 +355,7 @@
                             count: totalChanges
                         })
                     });
-                    const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
-                    $log.val("<?= $module->tt('log_end'); ?>".interpolate({
-                        current: $log.val(),
-                        total: totalChanges,
-                        minute: rounddown(secondsSpent / 60),
-                        seconds: round(secondsSpent % 60)
-                    }));
+                    stopLogClock();
                     glo.run = false;
                 }
             });
