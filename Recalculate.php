@@ -39,7 +39,7 @@ class Recalculate extends AbstractExternalModule
     Performs core functionality. Invoked via router/ajax/api.
     Fire the native redcap calculated field routines.
     */
-    public function recalculate($fields, $events, $records)
+    public function recalculate($fields, $events, $records, $previewOnly = false)
     {
         $errors = [];
         $eventNames = REDCap::getEventNames();
@@ -90,11 +90,16 @@ class Recalculate extends AbstractExternalModule
 
         // Execute Calc
         $updates = 0;
+        $preview = [];
         if (count($errors) == 0) {
             $batchSize = $this->getBatchSize(count($config['fields']['post']));
             $recordBatches = array_chunk($config['record']['post'], $batchSize);
             foreach ($recordBatches as $recordSubset) {
                 foreach ($config['event']['post'] as $event_id) {
+                    if ($previewOnly) {
+                        $preview[] = Calculate::calculateMultipleFields($recordSubset, $config['fields']['post'], true, $event_id);
+                        continue;
+                    }
                     $calcUpdates = Calculate::saveCalcFields($recordSubset, $config['fields']['post'], $event_id);
                     if (is_numeric($calcUpdates)) {
                         $updates += $calcUpdates;
@@ -114,7 +119,8 @@ class Recalculate extends AbstractExternalModule
             'changes' => $updates,
             'errors' => $errors,
             'records' => $records,
-            'source' => $page
+            'source' => $page,
+            'preview' => $preview
         ]);
     }
 

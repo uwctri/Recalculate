@@ -1,5 +1,5 @@
-<link rel='stylesheet' href='<?= $module->getURL('js/loading.min.css'); ?>'>
-<link rel='stylesheet' href='<?= $module->getURL('js/cookie.min.css'); ?>'>
+<link rel="stylesheet" href="<?= $module->getURL('lib/loading.min.css'); ?>">
+<script src="<?= $module->getURL('js/cookie.min.js'); ?>"></script>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 <style>
     .dropdown-item:hover,
@@ -76,8 +76,8 @@
                     <span class="sr-only">Toggle Dropdown</span>
                 </button>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item" href="#"><?= $module->tt('button_preview'); ?></a>
-                    <a class="dropdown-item" href="#">Another action</a>
+                    <a class="dropdown-item" data-action="preview" href="#"><?= $module->tt('button_preview'); ?></a>
+                    <a class="dropdown-item" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a>
                 </div>
             </div>
         </div>
@@ -110,8 +110,8 @@
         // Static refs and config
         let glo = <?= json_encode($module->loadSettings()); ?>;
         glo.isLongitudinal = true;
+        glo.run = false;
         const $calcBtn = $("#recalc");
-        const $calcGrp = $("#recalcBtnGroup")
         const $eventsSelect = $("#events");
         const $fieldsSelect = $("#fields");
         const $recordsText = $("#records");
@@ -126,12 +126,6 @@
         function toggleBtn() {
             $calcBtn.find('.btnText').toggle();
             $calcBtn.find('.ld').toggle();
-        }
-
-        // Timeout button to prevent double click
-        function timeoutBtn() {
-            $calcBtn.prop('disabled', true);
-            setTimeout(() => $calcBtn.prop('disabled', false), 2500);
         }
 
         // Util func to batch an array
@@ -173,9 +167,18 @@
         });
 
         // Button trigger
-        $calcBtn.on('click', () => {
+        $("#recalc, #recalcBtnGroup .dropdown-item").on('click', (event) => {
 
-            glo.batchSize = $bSize.change().val();
+            // Check if we are already running or need cancel
+            const action = $(event.currentTarget).data("action");
+            if (action == "cancel") {
+                glo.run = false;
+                return;
+            }
+            if (glo.run) return;
+
+            // Grab all used values
+            const batchSize = $bSize.change().val();
             const allFields = $allFields.is(':checked');
             const allEvents = $allEvents.is(':checked');
 
@@ -197,14 +200,11 @@
             // Send request
             toggleBtn();
             $log.val("");
-            glo.totalChanges = 0;
-            glo.eventCache = JSON.stringify(events);
-            glo.fieldCache = JSON.stringify(fields);
-            glo.batchNumber = 1;
+            glo.run = true;
             glo.time = new Date();
-            glo.recordBatches = batchArray(records, glo.batchSize).reverse();
+            glo.recordBatches = batchArray(records, batchSize).reverse();
             glo.totalBatches = glo.recordBatches.length;
-            sendCalcRequest(glo.recordBatches.pop(), glo.eventCache, glo.fieldCache);
+            sendRequest(glo.recordBatches.pop(), JSON.stringify(events), JSON.stringify(fields), action == "preview", batchSize, 1, 0);
         });
 
         // All Records toggle
@@ -224,12 +224,25 @@
         $bSize.on('change', () => isInteger($bSize.val(), true) ? $bSize.removeClass('is-invalid') : $bSize.val(""));
 
         // Ajax for the post
-        function sendCalcRequest(records, events, fields) {
+        function sendRequest(records, events, fields, preview, batchSize, batchNumber, totalChanges) {
+
+            // Bail if cancel was called
+            if (!glo.run) {
+                toggleBtn();
+                Toast.fire({
+                    icon: 'info',
+                    title: "<?= $module->tt('msg_cancel'); ?>"
+                });
+                const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
+                $log.val(`${$log.val()}${totalChanges} total changes in ${rounddown(secondsSpent/60)} minutes ${round(secondsSpent%60)} seconds`);
+                return;
+            }
+
             $.ajax({
                 method: 'POST',
                 url: glo.router,
                 data: {
-                    route: 'recalculate',
+                    route: preview ? 'preview' : 'recalculate',
                     records: JSON.stringify(records),
                     events: events,
                     fields: fields,
@@ -248,6 +261,7 @@
 
                 // Response returned from server
                 success: (data) => {
+                    console.log(data);
 
                     data = JSON.parse(data);
                     console.log(data);
@@ -264,26 +278,26 @@
                     }
 
                     // For any valid response, log and update
-                    glo.totalChanges += data.changes;
-                    $log.val(`${$log.val()}Batch ${glo.batchNumber} of ${glo.totalBatches}\nRecords ${data.records.join(', ')}\n`);
-                    glo.batchNumber += 1;
+                    totalChanges += data.changes;
+                    $log.val(`${$log.val()}Batch ${batchNumber} of ${glo.totalBatches}\nRecords ${data.records.join(', ')}\n`);
+                    batchNumber += 1;
 
                     // Multi batch with more to send
-                    if (glo.batchSize > 0 && glo.recordBatches.length) {
+                    if (batchSize > 0 && glo.recordBatches.length) {
                         $logRow.collapse("show");
-                        sendCalcRequest(glo.recordBatches.pop(), glo.eventCache, glo.fieldCache);
+                        sendRequest(glo.recordBatches.pop(), events, fields, preview, batchSize, batchNumber, totalChanges);
                         return;
                     }
 
                     // Single post or done with posts
                     toggleBtn();
-                    timeoutBtn();
                     Toast.fire({
                         icon: 'success',
-                        title: "<?= $module->tt('msg_success'); ?>".replace('_', glo.totalChanges)
+                        title: "<?= $module->tt('msg_success'); ?>".replace('_', totalChanges)
                     });
                     const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
-                    $log.val(`${$log.val()}${glo.totalChanges} total changes in ${rounddown(secondsSpent/60)} minutes ${round(secondsSpent%60)} seconds`);
+                    $log.val(`${$log.val()}${totalChanges} total changes in ${rounddown(secondsSpent/60)} minutes ${round(secondsSpent%60)} seconds`);
+                    glo.run = false;
                 }
             });
         }

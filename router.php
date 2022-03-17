@@ -1,7 +1,7 @@
 <?php
 
-if ($_POST['route'] == "recalculate") {
-    $module->recalculate($_POST['fields'], $_POST['events'], $_POST['records']);
+if ($_POST['route'] == "recalculate" || $_POST['route'] == "preview") {
+    $module->recalculate($_POST['fields'], $_POST['events'], $_POST['records'], $_POST['route'] == "preview");
     exit;
 }
 
