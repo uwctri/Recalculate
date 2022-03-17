@@ -23,6 +23,10 @@
         font-weight: bold;
     }
 
+    #records:disabled {
+        color: #6c757d;
+    }
+
     .custom-select {
         resize: vertical;
         scrollbar-width: thin;
@@ -168,16 +172,19 @@
                 batchNumber: batch,
                 totalBatches: glo.totalBatches
             }));
+            records = records == glo.records ? ['all'] : records;
             $divs.last().text("<?= $module->tt('log_records'); ?>" + records.join(', ').slice(0, 70));
         };
         const startLogClock = () => {
             glo.time = new Date();
-            glo.interval = setInterval(() => {
+            const clock = () => {
                 const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
                 const min = String(rounddown(secondsSpent / 60)).padStart(2, '0');
                 const sec = String(round(secondsSpent % 60)).padStart(2, '0');
                 $details.find('div').eq(1).text("<?= $module->tt('log_time'); ?>" + `${min}:${sec}`)
-            }, 1000);
+            }
+            clock();
+            glo.interval = setInterval(clock, 1000);
         };
         const stopLogClock = () => clearInterval(glo.interval);
 

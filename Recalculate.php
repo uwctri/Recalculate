@@ -74,7 +74,7 @@ class Recalculate extends AbstractExternalModule
                 ];
                 continue;
             }
-            if ($c['post'][0] == "*") {
+            if (in_array($c['post'][0], ["all", '*'])) {
                 $config[$name]['post'] = $c['valid'];
                 $config[$name]['all'] = true;
                 continue;

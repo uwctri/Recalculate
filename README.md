@@ -22,7 +22,7 @@ This module exposes a simple API to trigger recalcuations ...
 |   records         |   Record IDs or '*' for all             |  json array  |
 |   pid             |   Project ID                            |  int         |
 
-No defaults are assumed by the api, thus **all fields are requried**. The API token is generated per project and can be found in the module configuration. The token can be changed, but a blank token will always be rejected by the API.
+No defaults are assumed by the api, thus **all fields are requried**. The API token is generated per project and can be found in the module configuration. The token can be changed, but a blank token will always be rejected by the API. A parameter type of "json array" should always be an array, not a naked string.
 
 ## TODO
 
