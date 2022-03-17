@@ -295,6 +295,8 @@
 
                     // Server returned a validation error
                     if (data.errors.length) {
+                        toggleBtn();
+                        glo.run = false;
                         data.errors.forEach((err) => {
                             Toast.fire({
                                 icon: 'error',

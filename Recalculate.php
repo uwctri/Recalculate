@@ -80,7 +80,7 @@ class Recalculate extends AbstractExternalModule
                 continue;
             }
             $intersection = array_intersect($c['post'], $c['valid']);
-            if (length($intersection) != length($c['post'])) {
+            if (count($intersection) != count($c['post'])) {
                 $errors[] = [
                     "text" => str_replace("{property}", $name, $this->tt('error_invalid')),
                     "display" => true
