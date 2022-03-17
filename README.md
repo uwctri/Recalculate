@@ -26,6 +26,5 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 
 ## TODO
 
-* Log is in english only
 * Preview of changes to be made without saving (UI)
 * Persist previewed changes after leaving page (cookie on user)

@@ -140,6 +140,15 @@
             return chunks;
         }
 
+        // Interpolate Util functions for templates
+        String.prototype.interpolate = function(params) {
+            let newString = this;
+            Object.entries(params).forEach(function(replacePair) {
+                newString = newString.replaceAll(`{${replacePair[0]}}`, replacePair[1]);
+            });
+            return newString;
+        }
+
         // Enable popovers, static button width, clear all prev values
         $('[data-toggle="popover"]').popover();
         $calcBtn.css('width', $calcBtn.css('width'));
@@ -234,7 +243,12 @@
                     title: "<?= $module->tt('msg_cancel'); ?>"
                 });
                 const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
-                $log.val(`${$log.val()}${totalChanges} total changes in ${rounddown(secondsSpent/60)} minutes ${round(secondsSpent%60)} seconds`);
+                $log.val("<?= $module->tt('log_end'); ?>".interpolate({
+                    current: $log.val(),
+                    total: totalChanges,
+                    minute: rounddown(secondsSpent / 60),
+                    seconds: round(secondsSpent % 60)
+                }));
                 return;
             }
 
@@ -292,7 +306,12 @@
 
                     // For any valid response, log and update
                     totalChanges += data.changes;
-                    $log.val(`${$log.val()}Batch ${batchNumber} of ${glo.totalBatches}\nRecords ${data.records.join(', ')}\n`);
+                    $log.val("<?= $module->tt('log_line'); ?>".interpolate({
+                        current: $log.val(),
+                        batchNumber: batchNumber,
+                        totalBatches: glo.totalBatches,
+                        records: data.records.join(', ')
+                    }));
                     batchNumber += 1;
 
                     // Multi batch with more to send
@@ -306,10 +325,17 @@
                     toggleBtn();
                     Toast.fire({
                         icon: 'success',
-                        title: "<?= $module->tt('msg_success'); ?>".replace('_', totalChanges)
+                        title: "<?= $module->tt('msg_success'); ?>".interpolate({
+                            count: totalChanges
+                        })
                     });
                     const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
-                    $log.val(`${$log.val()}${totalChanges} total changes in ${rounddown(secondsSpent/60)} minutes ${round(secondsSpent%60)} seconds`);
+                    $log.val("<?= $module->tt('log_end'); ?>".interpolate({
+                        current: $log.val(),
+                        total: totalChanges,
+                        minute: rounddown(secondsSpent / 60),
+                        seconds: round(secondsSpent % 60)
+                    }));
                     glo.run = false;
                 }
             });
