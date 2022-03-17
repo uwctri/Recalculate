@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="<?= $module->getURL('lib/loading.min.css'); ?>">
-<script src="<?= $module->getURL('js/cookie.min.js'); ?>"></script>
+<script src="<?= $module->getURL('lib/cookie.min.js'); ?>"></script>
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 <style>
     .dropdown-item:hover,
@@ -261,10 +261,23 @@
 
                 // Response returned from server
                 success: (data) => {
-                    console.log(data);
 
-                    data = JSON.parse(data);
+                    // Check if a 500 error occured, possible memory issue
+                    let fatal = false;
+                    try {
+                        data = JSON.parse(data);
+                    } catch {
+                        toggleBtn();
+                        glo.run = false;
+                        fatal = true;
+                        Swal.fire({
+                            icon: "error",
+                            title: "<?= $module->tt('error_500'); ?>",
+                            text: "<?= $module->tt('error_500_text'); ?>"
+                        })
+                    }
                     console.log(data);
+                    if (fatal) return;
 
                     // Server returned a validation error
                     if (data.errors.length) {

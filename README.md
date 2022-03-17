@@ -29,4 +29,3 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 * Log is in english only
 * Preview of changes to be made without saving (UI)
 * Persist previewed changes after leaving page (cookie on user)
-* We currently ALWAYS query for 1 event at a time. This method never fails, but its often slower than just doing all events at once for normal size projects 

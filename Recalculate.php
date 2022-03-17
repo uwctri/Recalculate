@@ -95,11 +95,17 @@ class Recalculate extends AbstractExternalModule
             $batchSize = $this->getBatchSize(count($config['fields']['post']));
             $recordBatches = array_chunk($config['record']['post'], $batchSize);
             foreach ($recordBatches as $recordSubset) {
+
+                // Preview generation only
+                if ($previewOnly) {
+                    $tmp = Calculate::calculateMultipleFields($recordSubset, $config['fields']['post'], true, 'all');
+                    if (count($tmp) > 0) $preview[] = $tmp;
+                    continue;
+                }
+
+                // For specific event writes, flip through events or post 'all'
+                if ($config['event']['all']) $config['event']['post'] = 'all';
                 foreach ($config['event']['post'] as $event_id) {
-                    if ($previewOnly) {
-                        $preview[] = Calculate::calculateMultipleFields($recordSubset, $config['fields']['post'], true, $event_id);
-                        continue;
-                    }
                     $calcUpdates = Calculate::saveCalcFields($recordSubset, $config['fields']['post'], $event_id);
                     if (is_numeric($calcUpdates)) {
                         $updates += $calcUpdates;
