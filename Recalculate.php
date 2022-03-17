@@ -99,7 +99,7 @@ class Recalculate extends AbstractExternalModule
                 // Preview generation only
                 if ($previewOnly) {
                     $tmp = Calculate::calculateMultipleFields($recordSubset, $config['fields']['post'], true, 'all');
-                    if (count($tmp) > 0) $preview[] = $tmp;
+                    if (count($tmp) > 0) $preview = array_merge_recursive($preview, $tmp);
                     continue;
                 }
 
