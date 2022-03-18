@@ -92,6 +92,7 @@ class Recalculate extends AbstractExternalModule
         // Execute Calc
         $updates = 0;
         $preview = [];
+        $debug = [];
         if (count($errors) == 0) {
             $batchSize = $this->getBatchSize(count($config['field']['post']));
             $recordBatches = array_chunk($config['record']['post'], $batchSize);
@@ -102,7 +103,9 @@ class Recalculate extends AbstractExternalModule
                 if ($previewOnly) {
                     $tmp = Calculate::calculateMultipleFields($recordSubset, $fields, false, 'all');
                     if (count($tmp) > 0) {
-                        //$tmp = array_combine(array_map('addPrefix', array_keys($tmp)), array_values($tmp));
+                        $tmp = array_combine(array_map(function ($a) {
+                            return '_' . $a;
+                        }, array_keys($tmp)), array_values($tmp));
                         $preview = array_merge_recursive($preview, $tmp);
                     }
                     continue;
@@ -250,13 +253,5 @@ class Recalculate extends AbstractExternalModule
     private function generateToken()
     {
         return strtoupper(md5(USERID . APP_PATH_WEBROOT_FULL  . generateRandomHash(mt_rand(64, 128))));
-    }
-
-    /*
-    Utility function to add a prefix to an int string
-    */
-    function addPrefix($a)
-    {
-        return '_' . $a;
     }
 }
