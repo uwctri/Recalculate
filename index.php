@@ -31,6 +31,19 @@
         resize: vertical;
         scrollbar-width: thin;
     }
+
+    .dataTables_filter {
+        float: left !important;
+        font-weight: bold;
+    }
+
+    .dataTables_filter input {
+        margin-left: 10px;
+    }
+
+    #previewTable tr.odd {
+        background-color: #eeeeee !important;
+    }
 </style>
 <div class="container float-left" style="max-width:800px">
 
@@ -122,9 +135,9 @@
     </div>
 
     <!-- Display Preview -->
-    <div class="row p-2">
+    <div id="previewTable" class="row p-2 collapse">
         <div class="col-12">
-
+            <table style="width:100%" class="table"></table>
         </div>
     </div>
 </div>
@@ -157,6 +170,43 @@
         const $allFields = $("#allFields");
         const $bSize = $("#batchSize");
         const $details = $(".detailsGrid");
+        const $table = $("#previewTable");
+
+        // Setup Table
+        $table.find('table').DataTable({
+            data: [],
+            pageLength: 50,
+            dom: "<'row'<'col'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            columns: [{
+                    title: 'Record',
+                    data: 'record'
+                },
+                {
+                    title: 'Event',
+                    data: 'event',
+                    render: (data, type, row, meta) => glo.events[data]
+                },
+                {
+                    title: 'Field',
+                    data: 'field'
+                },
+                {
+                    title: 'Current Value',
+                    data: 'current'
+                },
+                {
+                    title: 'Calculated Value',
+                    data: 'calc'
+                },
+                {
+                    title: '',
+                    data: 'action',
+                    sortable: false
+                }
+            ]
+        });
 
         // Toggle loading ring
         const toggleBtn = () => {
@@ -195,7 +245,7 @@
                     totalBatches: glo.totalBatches
                 }));
             }
-            records = records == glo.records ? ["<?= $module->tt('log_all'); ?>"] : records;
+            records = (records == glo.records) || (records[0] == "*") ? ["<?= $module->tt('log_all'); ?>"] : records;
             $divs.last().text("<?= $module->tt('log_records'); ?>" + records.join(', ').slice(0, 70));
         };
         const startLogClock = () => {
@@ -250,14 +300,14 @@
             if (glo.run) return;
 
             // Grab all used values
-            const batchSize = $bSize.change().val();
+            const batchSize = $bSize.change().val() || 0;
             const allFields = $allFields.is(':checked');
             const allEvents = $allEvents.is(':checked');
 
             const fields = allFields ? ['*'] : $fieldsSelect.val();
             const events = (allEvents || !glo.isLongitudinal) ? ['*'] : $eventsSelect.val();
             let records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
-            records = records[0] == '*' ? glo.records : records;
+            records = records[0] == '*' && batchSize > 0 ? glo.records : records;
 
             // Color missing fields (validation)
             $fieldsSelect.addClass(fields.length ? '' : 'is-invalid');
@@ -370,22 +420,33 @@
                     totalChanges += data.changes;
                     batchNumber += 1;
 
+                    // Update preview table
+                    if (preview && Object.entries(data.preview).length) {
+                        $dt = $table.find('table').DataTable();
+                        // $dt.row.add([
+                        // TODO Show data
+                        // ]);
+                        $table.collapse('show');
+                    }
+
                     // Multi batch with more to send
                     if (batchSize > 0 && glo.recordBatches.length) {
                         sendRequest(glo.recordBatches.pop(), events, fields, preview, batchSize, batchNumber, totalChanges);
                         return;
                     }
 
-                    // Single post or done with posts
+                    // Single post or done with posts, she success toast
                     toggleBtn();
-                    Toast.fire({
-                        icon: 'success',
-                        title: "<?= $module->tt('msg_success'); ?>".interpolate({
-                            count: totalChanges
-                        })
-                    });
                     stopLogClock();
                     glo.run = false;
+                    if (preview && $table.is(":visible")) return;
+                    let msg = preview ? "<?= $module->tt('msg_nopreview'); ?>" : "<?= $module->tt('msg_success'); ?>".interpolate({
+                        count: totalChanges
+                    });
+                    Toast.fire({
+                        icon: 'success',
+                        title: msg
+                    });
                 }
             });
         }

@@ -28,3 +28,4 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 
 * Preview of changes to be made without saving (UI)
 * Persist previewed changes after leaving page (cookie on user)
+* 'false' is hard coded into the preview to force showing only where calcs are wrong. Allow true?

@@ -12,8 +12,7 @@
             "institution": "Abt Associates"
         }
     ],
-    "permissions": [
-    ],
+    "permissions": [],
     "framework-version": 8,
     "no-auth-pages": [
         "api"
@@ -36,6 +35,14 @@
             "key": "api_token",
             "name": "<b>API token</b><br>This token is project specific and visible to any user able to execute data quality rules",
             "tt_name": "module_token",
+            "type": "text"
+        }
+    ],
+    "system-settings": [
+        {
+            "key": "memory",
+            "name": "<b>Increase Usable Memory:</b><br>In MegaBytes (MB). Set PHP's 'memory_limit' to this value when performing recalculations. Useful if a project is reporting a memory issue when using this EM",
+            "tt_name": "module_mem",
             "type": "text"
         }
     ],

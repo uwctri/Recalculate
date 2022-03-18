@@ -44,6 +44,7 @@ class Recalculate extends AbstractExternalModule
         $errors = [];
         $eventNames = REDCap::getEventNames();
         $page = $_GET['page'];
+        $this->checkMemory();
 
         // Load everything into an array for easy looping
         $config = [
@@ -74,7 +75,7 @@ class Recalculate extends AbstractExternalModule
                 ];
                 continue;
             }
-            if (in_array($c['post'][0], ["all", '*'])) {
+            if (in_array($c['post'][0], ["all", "*"])) {
                 $config[$name]['post'] = $c['valid'];
                 $config[$name]['all'] = true;
                 continue;
@@ -92,21 +93,25 @@ class Recalculate extends AbstractExternalModule
         $updates = 0;
         $preview = [];
         if (count($errors) == 0) {
-            $batchSize = $this->getBatchSize(count($config['fields']['post']));
+            $batchSize = $this->getBatchSize(count($config['field']['post']));
             $recordBatches = array_chunk($config['record']['post'], $batchSize);
+            $fields = $config['field']['all'] ? Null : $config['field']['post'];
             foreach ($recordBatches as $recordSubset) {
 
                 // Preview generation only
                 if ($previewOnly) {
-                    $tmp = Calculate::calculateMultipleFields($recordSubset, $config['fields']['post'], true, 'all');
-                    if (count($tmp) > 0) $preview = array_merge_recursive($preview, $tmp);
+                    $tmp = Calculate::calculateMultipleFields($recordSubset, $fields, false, 'all');
+                    if (count($tmp) > 0) {
+                        //$tmp = array_combine(array_map('addPrefix', array_keys($tmp)), array_values($tmp));
+                        $preview = array_merge_recursive($preview, $tmp);
+                    }
                     continue;
                 }
 
                 // For specific event writes, flip through events or post 'all'
                 if ($config['event']['all']) $config['event']['post'] = 'all';
                 foreach ($config['event']['post'] as $event_id) {
-                    $calcUpdates = Calculate::saveCalcFields($recordSubset, $config['fields']['post'], $event_id);
+                    $calcUpdates = Calculate::saveCalcFields($recordSubset, $fields, $event_id);
                     if (is_numeric($calcUpdates)) {
                         $updates += $calcUpdates;
                         break;
@@ -208,6 +213,18 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
+    Check system settings, we might want to increase allowed RAM
+    */
+    private function checkMemory()
+    {
+        $mb = intval($this->getSystemSetting('memory'));
+        $current = ini_get('memory_limit');
+        $current = intval($current) * (stripos($current, 'g') ? 1024 : 1);
+        if ($mb < 100 || $mb <= $current) return;
+        ini_set('memory_limit', $mb . 'M');
+    }
+
+    /*
     Return all records in the project, optionally pass events to
     speed up the data pull
     */
@@ -233,5 +250,13 @@ class Recalculate extends AbstractExternalModule
     private function generateToken()
     {
         return strtoupper(md5(USERID . APP_PATH_WEBROOT_FULL  . generateRandomHash(mt_rand(64, 128))));
+    }
+
+    /*
+    Utility function to add a prefix to an int string
+    */
+    function addPrefix($a)
+    {
+        return '_' . $a;
     }
 }
