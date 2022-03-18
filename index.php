@@ -33,6 +33,8 @@
     }
 </style>
 <div class="container float-left" style="max-width:800px">
+
+    <!-- Top Text -->
     <div class="row p-2">
         <div class="col-12">
             <p>
@@ -40,6 +42,8 @@
             </p>
         </div>
     </div>
+
+    <!-- Records -->
     <div class="row p-2">
         <label for="records" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_record'); ?></label>
         <div class="col-10">
@@ -50,6 +54,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Events -->
     <div class="row p-2">
         <label for="events" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_event'); ?></label>
         <div class="col-10">
@@ -61,6 +67,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Fields -->
     <div class="row p-2">
         <label for="fields" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_field'); ?></label>
         <div class="col-10">
@@ -72,11 +80,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Advanced Button -->
     <div class="row p-2">
         <div class="offset-2  col-10">
             <a class="color-primary font-weight-bold" role="button" data-toggle="collapse" data-target="#batchSizeRow"><?= $module->tt('button_advanced'); ?> <i class="fa fa-arrow-down"></i></a>
         </div>
     </div>
+
+    <!-- Batch Size -->
     <div id="batchSizeRow" class="row p-2 collapse">
         <label for="batchSize" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_batch'); ?></label>
         <div class="col-10">
@@ -84,17 +96,19 @@
             <span id="batchSizeHelpBlock" class="form-text text-muted"><?= $module->tt('label_batch_help'); ?></span>
         </div>
     </div>
+
+    <!-- Go Button & Details -->
     <div class="row p-2">
         <div class="offset-2 col-6 detailsGrid">
             <div>Batch N of M</div>
             <div>Time Elapsed: 00:00</div>
-            <div style=" grid-area:2/1/3/3;white-space:nowrap;">Processing: record_1, record_2, record_3, rec...</div>
+            <div style="grid-area:2/1/3/3;white-space:nowrap;">Processing: record_1, record_2, record_3, rec...</div>
         </div>
         <div class="col-4">
             <div id="recalcBtnGroup" class="btn-group float-right">
                 <button id="recalc" type="button" class="btn btn-primary pr-0">
                     <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
-                    <i class="ld ld-spin ld-ring" style="display:none"></i>
+                    <span class="hidden"><i class="ld ld-spin ld-ring"></i></span>
                 </button>
                 <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="sr-only">Toggle Dropdown</span>
@@ -104,6 +118,13 @@
                     <a class="dropdown-item" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Display Preview -->
+    <div class="row p-2">
+        <div class="col-12">
+
         </div>
     </div>
 </div>
@@ -140,7 +161,7 @@
         // Toggle loading ring
         const toggleBtn = () => {
             $calcBtn.find('.btnText').toggle();
-            $calcBtn.find('.ld').toggle();
+            $calcBtn.find('.ld').parent().toggle();
         };
 
         // Util func to batch an array
