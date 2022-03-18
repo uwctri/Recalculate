@@ -168,11 +168,13 @@
         const clearLog = () => $details.find("div").text("");
         const updateLog = (batch, records) => {
             const $divs = $details.find('div');
-            $divs.first().text("<?= $module->tt('log_batch'); ?>".interpolate({
-                batchNumber: batch,
-                totalBatches: glo.totalBatches
-            }));
-            records = records == glo.records ? ['all'] : records;
+            if (glo.totalBatches > 1) {
+                $divs.first().text("<?= $module->tt('log_batch'); ?>".interpolate({
+                    batchNumber: batch,
+                    totalBatches: glo.totalBatches
+                }));
+            }
+            records = records == glo.records ? ["<?= $module->tt('log_all'); ?>"] : records;
             $divs.last().text("<?= $module->tt('log_records'); ?>" + records.join(', ').slice(0, 70));
         };
         const startLogClock = () => {
@@ -181,8 +183,8 @@
                 const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
                 const min = String(rounddown(secondsSpent / 60)).padStart(2, '0');
                 const sec = String(round(secondsSpent % 60)).padStart(2, '0');
-                $details.find('div').eq(1).text("<?= $module->tt('log_time'); ?>" + `${min}:${sec}`)
-            }
+                $details.find('div').eq(glo.totalBatches > 1 ? 1 : 0).text("<?= $module->tt('log_time'); ?>" + `${min}:${sec}`)
+            };
             clock();
             glo.interval = setInterval(clock, 1000);
         };
@@ -249,11 +251,10 @@
             // Send request
             toggleBtn();
             clearLog();
-            startLogClock();
             glo.run = true;
-            glo.time = new Date();
             glo.recordBatches = batchArray(records, batchSize).reverse();
             glo.totalBatches = glo.recordBatches.length;
+            startLogClock();
             sendRequest(glo.recordBatches.pop(), JSON.stringify(events), JSON.stringify(fields), action == "preview", batchSize, 1, 0);
         });
 
