@@ -1,0 +1,47 @@
+.dropdown-item:hover,
+.dropdown-item:active {
+    outline: none;
+    background: #e9ecef;
+}
+
+#recalcBtnGroup .dropdown-item {
+    color: #212529;
+    font-size: 0.95rem;
+}
+
+.detailsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-column-gap: 20px;
+    grid-row-gap: 0px;
+    color: #6d6d6d;
+    font-weight: bold;
+}
+
+#records:disabled {
+    color: #6c757d;
+}
+
+.custom-select {
+    resize: vertical;
+    scrollbar-width: thin;
+}
+
+.dataTables_filter {
+    float: left !important;
+    font-weight: bold;
+}
+
+#previewTable input {
+    margin-left: 10px;
+}
+
+#previewTable tr.odd {
+    background: white !important;
+}
+
+.paginate_button:hover {
+    color: #212529;
+    background: #eeeeee !important;
+}

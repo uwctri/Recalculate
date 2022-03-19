@@ -26,5 +26,5 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 
 ## TODO
 
-* Persist previewed changes after leaving page (cookie on user)
 * Right click context menu to calc 1 row or page
+* Button to show the past data / card style?

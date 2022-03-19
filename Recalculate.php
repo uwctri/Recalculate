@@ -180,7 +180,8 @@ class Recalculate extends AbstractExternalModule
             "fields" => $this->getAllCalcFields(),
             "records" => $this->getAllRecordIds($events),
             "csrf"   => $this->getCSRFToken(),
-            "router" => $this->getUrl('router.php')
+            "router" => $this->getUrl('router.php'),
+            "em" => $this->getJavascriptModuleObjectName()
         ];
     }
 
