@@ -45,3 +45,7 @@
     color: #212529;
     background: #eeeeee !important;
 }
+
+.rotate {
+    rotate: 180deg;
+}

@@ -61,7 +61,7 @@ $module->tt_transferToJavascriptModuleObject();
     <!-- Advanced Button -->
     <div class="row p-2">
         <div class="offset-2  col-10">
-            <a class="color-primary font-weight-bold" role="button" data-toggle="collapse" data-target="#batchSizeRow">
+            <a class="color-primary font-weight-bold" role="button" data-toggle="collapse" data-target="#batchSizeRow" onclick="(() => $('.fa-arrow-down').toggleClass('rotate'))();">
                 <?= $module->tt('button_advanced'); ?>
                 <i class="fa fa-arrow-down"></i>
             </a>
