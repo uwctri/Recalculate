@@ -5,7 +5,7 @@
     .dropdown-item:hover,
     .dropdown-item:active {
         outline: none;
-        background-color: #e9ecef;
+        background: #e9ecef;
     }
 
     #recalcBtnGroup .dropdown-item {
@@ -37,12 +37,17 @@
         font-weight: bold;
     }
 
-    .dataTables_filter input {
+    #previewTable input {
         margin-left: 10px;
     }
 
     #previewTable tr.odd {
-        background-color: #eeeeee !important;
+        background: white !important;
+    }
+
+    .paginate_button:hover {
+        color: #212529;
+        background: #eeeeee !important;
     }
 </style>
 <div class="container float-left" style="max-width:800px">
@@ -61,7 +66,7 @@
         <label for="records" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_record'); ?></label>
         <div class="col-10">
             <input id="records" name="records" placeholder="record_1, record_2 etc" type="text" class="form-control">
-            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all records for recalculation">
+            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="<?= $module->tt('select_record'); ?>">
                 <input type="checkbox" class="custom-control-input" id="allRecords" data-state="0">
                 <label class="custom-control-label" for="allRecords"></label>
             </div>
@@ -74,7 +79,7 @@
         <div class="col-10">
             <select multiple="multiple" id="events" name="events" class="custom-select">
             </select>
-            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all events for recalculation">
+            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="<?= $module->tt('select_event'); ?>">
                 <input type="checkbox" class="custom-control-input" id="allEvents" data-state="0">
                 <label class="custom-control-label" for="allEvents"></label>
             </div>
@@ -87,7 +92,7 @@
         <div class="col-10">
             <select id="fields" name="fields" class="custom-select" multiple="multiple">
             </select>
-            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="Select all fields for recalculation">
+            <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="<?= $module->tt('select_field'); ?>">
                 <input type="checkbox" class="custom-control-input" id="allFields" data-state="0">
                 <label class="custom-control-label" for="allFields"></label>
             </div>
@@ -113,9 +118,9 @@
     <!-- Go Button & Details -->
     <div class="row p-2">
         <div class="offset-2 col-6 detailsGrid">
-            <div>Batch N of M</div>
-            <div>Time Elapsed: 00:00</div>
-            <div style="grid-area:2/1/3/3;white-space:nowrap;">Processing: record_1, record_2, record_3, rec...</div>
+            <div></div>
+            <div></div>
+            <div style="grid-area:2/1/3/3;white-space:nowrap;"></div>
         </div>
         <div class="col-4">
             <div id="recalcBtnGroup" class="btn-group float-right">
@@ -136,10 +141,15 @@
 
     <!-- Display Preview -->
     <div id="previewTable" class="row p-2 collapse">
+        <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="">
+            <input type="checkbox" class="custom-control-input" id="equalCalcs" data-state="1">
+            <label class="custom-control-label" for="equalCalcs"></label>
+        </div>
         <div class="col-12">
             <table style="width:100%" class="table"></table>
         </div>
     </div>
+
 </div>
 
 <script>
@@ -171,42 +181,69 @@
         const $bSize = $("#batchSize");
         const $details = $(".detailsGrid");
         const $table = $("#previewTable");
+        const $showEqCalcs = $("#equalCalcs");
+
+        // Enable popovers, static button width, clear all prev values
+        $('[data-toggle="popover"]').popover();
+        $calcBtn.css('width', $calcBtn.css('width'));
+        $("#center input").prop("checked", false).val("");
 
         // Setup Table
         $table.find('table').DataTable({
             data: [],
-            pageLength: 50,
-            dom: "<'row'<'col'f>>" +
-                "<'row'<'col-sm-12'tr>>" +
-                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            pageLength: 40,
+            dom: `<'row'<'col-sm-10'f><'col-sm-2 customToggle'>>
+                  <'row'<'col-sm-12'tr>>"
+                  <'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>`,
             columns: [{
-                    title: 'Record',
-                    data: 'record'
+                    title: '<?= $module->tt('table_record'); ?>',
+                    data: 'record',
+                    render: (data, type, row, meta) => data.slice(1)
                 },
                 {
-                    title: 'Event',
+                    title: '<?= $module->tt('table_event'); ?>',
                     data: 'event',
                     render: (data, type, row, meta) => glo.events[data]
                 },
                 {
-                    title: 'Field',
+                    title: '<?= $module->tt('table_field'); ?>',
                     data: 'field'
                 },
                 {
-                    title: 'Current Value',
+                    title: '<?= $module->tt('table_current'); ?>',
                     data: 'current'
                 },
                 {
-                    title: 'Calculated Value',
+                    title: '<?= $module->tt('table_calc'); ?>',
                     data: 'calc'
-                },
-                {
-                    title: '',
-                    data: 'action',
-                    sortable: false
                 }
             ]
         });
+
+        // More Table setup
+        $showEqCalcs.parent().appendTo('.customToggle').on('change', () => {
+            const $t = $showEqCalcs.parent();
+            $t.popover('dispose');
+            let msg = "";
+            if ($showEqCalcs.is(":checked")) {
+                msg = "<?= $module->tt('select_table_show'); ?>";
+                $.fn.dataTable.ext.search.push(
+                    (settings, data, dataIndex) => {
+                        return data[3] != data[4]
+                    }
+                )
+            } else {
+                msg = "<?= $module->tt('select_table_hide'); ?>";
+                $.fn.dataTable.ext.search.pop();
+            }
+            $t.popover({
+                trigger: 'hover',
+                content: msg
+            });
+            $table.find('table').DataTable().draw();
+        });
+        $showEqCalcs.prop("checked", true).change();
+
 
         // Toggle loading ring
         const toggleBtn = () => {
@@ -261,11 +298,27 @@
         };
         const stopLogClock = () => clearInterval(glo.interval);
 
-        // Enable popovers, static button width, clear all prev values
-        $('[data-toggle="popover"]').popover();
-        $calcBtn.css('width', $calcBtn.css('width'));
-        $("#center input").prop("checked", false).val("");
-        clearLog();
+        // Traverse the standard redcap strucutre
+        const traverse = function*(data) {
+            for (let record in data) {
+                for (let event in data[record]) {
+                    for (let form in data[record][event]) {
+                        for (let instance in data[record][event][form]) {
+                            for (let field in data[record][event][form][instance]) {
+                                yield {
+                                    ...data[record][event][form][instance][field],
+                                    record: record,
+                                    event: event,
+                                    form: form,
+                                    instance: instance,
+                                    field: field
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
 
         // Build out event options
         const eventBox = document.getElementById('events');
@@ -325,6 +378,7 @@
             glo.run = true;
             glo.recordBatches = batchArray(records, batchSize).reverse();
             glo.totalBatches = glo.recordBatches.length;
+            $table.find('table').DataTable().clear();
             startLogClock();
             sendRequest(glo.recordBatches.pop(), JSON.stringify(events), JSON.stringify(fields), action == "preview", batchSize, 1, 0);
         });
@@ -423,9 +477,16 @@
                     // Update preview table
                     if (preview && Object.entries(data.preview).length) {
                         $dt = $table.find('table').DataTable();
-                        // $dt.row.add([
-                        // TODO Show data
-                        // ]);
+                        const gen = traverse(data.preview);
+                        let next;
+                        while (!(next = gen.next()).done) {
+                            let t = next.value;
+                            $dt.row.add({
+                                ...next.value,
+                                current: next.value.saved
+                            });
+                        }
+                        $dt.draw(false);
                         $table.collapse('show');
                     }
 
