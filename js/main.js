@@ -12,10 +12,11 @@
         }
     });
 
-    // Static refs and config
+    // Globals and common queries
     let isLongitudinal = true;
     let run = false;
     let totalBatches = -1;
+    let clockInterval = -1;
     const $calcBtn = $("#recalc");
     const $eventsSelect = $("#events");
     const $fieldsSelect = $("#fields");
@@ -155,9 +156,9 @@
             $details.find('div').eq(totalBatches > 1 ? 1 : 0).text(glo.em.tt('log_time') + `${min}:${sec}`)
         };
         clock();
-        glo.interval = setInterval(clock, 1000);
+        clockInterval = setInterval(clock, 1000);
     };
-    const stopLogClock = () => clearInterval(glo.interval);
+    const stopLogClock = () => clearInterval(clockInterval);
 
     // Generate the datatable given preview data
     const updatePreviewTable = (data) => {
