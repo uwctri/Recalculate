@@ -92,7 +92,6 @@ class Recalculate extends AbstractExternalModule
         // Execute Calc
         $updates = 0;
         $preview = [];
-        $debug = [];
         if (count($errors) == 0) {
             $batchSize = $this->getBatchSize(count($config['field']['post']));
             $recordBatches = array_chunk($config['record']['post'], $batchSize);

@@ -2,8 +2,11 @@
 $module->initializeJavascriptModuleObject();
 $module->tt_transferToJavascriptModuleObject();
 ?>
-<link rel="stylesheet" href="<?= $module->getURL('loading.min.css'); ?>">
-<link rel="stylesheet" href="<?= $module->getURL('main.css'); ?>">
+<link rel="stylesheet" href="<?= $module->getURL('css/loading.min.css'); ?>">
+<link rel="stylesheet" href="<?= $module->getURL('css/main.css'); ?>">
+<script src="<?= $module->getURL('js/jquery.contextMenu.js'); ?>"></script>
+<script src="<?= $module->getURL('js/jquery.ui.position.min.js'); ?>"></script>
+<link rel="stylesheet" href="<?= $module->getURL('css/jquery.contextMenu.css'); ?>">
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
 <script>
     let glo = <?= json_encode($module->loadSettings()); ?>;
@@ -96,6 +99,7 @@ $module->tt_transferToJavascriptModuleObject();
                 <div class="dropdown-menu">
                     <a class="dropdown-item" data-action="preview" href="#"><?= $module->tt('button_preview'); ?></a>
                     <a class="dropdown-item" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a>
+                    <a class="dropdown-item" data-action="old" href="#"><?= $module->tt('button_old'); ?></a>
                 </div>
             </div>
         </div>
@@ -113,4 +117,4 @@ $module->tt_transferToJavascriptModuleObject();
     </div>
 
 </div>
-<script src="<?= $module->getURL('main.js'); ?>"></script>
+<script src="<?= $module->getURL('js/main.js'); ?>"></script>

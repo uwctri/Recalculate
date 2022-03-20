@@ -38,7 +38,7 @@
         pageLength: 40,
         dom: `<'row'<'col-sm-10'f><'col-sm-2 customToggle'>>
               <'row'<'col-sm-12'tr>>"
-              <'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>`,
+              <'row'<'col-sm-12 col-md-6 small'i><'col-sm-12 col-md-6'p>>`,
         language: {
             emptyTable: glo.em.tt('table_empty'),
             zeroRecords: glo.em.tt('table_empty')

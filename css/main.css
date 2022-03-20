@@ -33,6 +33,11 @@
     font-weight: bold;
 }
 
+#previewTable {
+    border: 2px #eeeeee solid;
+    border-radius: 10px;
+}
+
 #previewTable input {
     margin-left: 10px;
 }
