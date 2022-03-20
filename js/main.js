@@ -29,6 +29,8 @@
     const $table = $("#previewTable");
     const $showEqCalcs = $("#equalCalcs");
     const $bRow = $("#batchSizeRow");
+    const $form = $("#primaryForm");
+    const $reBtn = $("#reopenBtn");
 
     // Enable popovers, static button width, clear all prev values
     $('[data-toggle="popover"]').popover();
@@ -95,7 +97,7 @@
     });
     $showEqCalcs.prop("checked", true).change();
 
-    // Context menu Setuop
+    // Context menu Setup
     $.contextMenu({
         selector: '#previewTable tr',
         callback: function (key, options) {
@@ -175,6 +177,12 @@
         $dt.draw(false);
     };
 
+    const showTable = () => {
+        $table.collapse('show');
+        $form.collapse('hide');
+        $reBtn.collapse('show');
+    }
+
     // Traverse the standard redcap strucutre
     const traverse = function* (data) {
         for (let record in data) {
@@ -201,8 +209,6 @@
     let storage = JSON.parse(localStorage.getItem("RedcapEMcalcPreview") || '{}');
     if (storage.data) {
         updatePreviewTable(storage.data);
-        $table.collapse('show');
-        // TODO create a "show old data" button
     }
 
     // Build out event options
@@ -229,10 +235,14 @@
     // Button trigger
     $("#recalc, #recalcBtnGroup .dropdown-item").on('click', (event) => {
 
-        // Check if we are already running or need cancel
+        // Check if we are already running, need cancel, or just want to view old table
         const action = $(event.currentTarget).data("action");
         if (action == "cancel") {
             run = false;
+            return;
+        }
+        if (action == "old") {
+            showTable();
             return;
         }
         if (run) return;
@@ -286,8 +296,11 @@
     $bSize.on('change', () => isInteger($bSize.val(), true) ? $bSize.removeClass('is-invalid') : $bSize.val(""));
 
     // Advanced Button styling
-    $bRow.on('show.bs.collapse', () => { $('.fa-arrow-down').addClass('rotate') });
-    $bRow.on('hide.bs.collapse', () => { $('.fa-arrow-down').removeClass('rotate') });
+    $bRow.on('show.bs.collapse', () => { $('#advRow i').addClass('rotate') });
+    $bRow.on('hide.bs.collapse', () => { $('#advRow i').removeClass('rotate') });
+
+    // Reopen Styling
+    $reBtn.on('click', () => { $reBtn.collapse('hide') });
 
     // Ajax for the post
     const sendRequest = (records, events, fields, preview, batchSize, batchNumber, totalChanges) => {
@@ -367,7 +380,7 @@
                 // Update preview table
                 if (preview && Object.entries(data.preview).length) {
                     updatePreviewTable(data.preview);
-                    $table.collapse('show');
+                    showTable();
                 }
 
                 // Multi batch with more to send

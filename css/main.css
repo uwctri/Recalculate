@@ -47,10 +47,34 @@
 }
 
 .paginate_button:hover {
-    color: #212529;
+    -webkit-text-fill-color: #212529;
     background: #eeeeee !important;
 }
 
 .rotate {
     rotate: 180deg;
+}
+
+.wideBtn {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: 20px 0;
+    grid-gap: 20px;
+}
+
+.wideBtn:after,
+.wideBtn:before {
+    content: " ";
+    display: block;
+    border-bottom: 3px solid #007bff;
+    border-radius: 3px;
+}
+
+.wideBtn span {
+    translate: 0 8px;
+}
+
+.container button:hover, 
+.container a:hover {
+    outline: none;
 }
