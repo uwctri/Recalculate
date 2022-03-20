@@ -15,6 +15,7 @@
     // Static refs and config
     let isLongitudinal = true;
     let run = false;
+    let totalBatches = -1;
     const $calcBtn = $("#recalc");
     const $eventsSelect = $("#events");
     const $fieldsSelect = $("#fields");
@@ -92,6 +93,27 @@
     });
     $showEqCalcs.prop("checked", true).change();
 
+    // Context menu Setuop
+    $.contextMenu({
+        selector: '#previewTable tr',
+        callback: function (key, options) {
+            if (key != "run" || run) return;
+            toggleBtn();
+            clearLog();
+            run = true;
+            glo.recordBatches = [];
+            totalBatches = 1;
+            startLogClock();
+            const data = $table.find('table').DataTable().row(options.$trigger).data();
+            const event = JSON.stringify([data.event]);
+            const field = JSON.stringify([data.field]);
+            sendRequest([data.record.slice(1)], event, field, false, 0, 1, 0);
+        },
+        items: {
+            "run": { name: "Run Recalculation", icon: "fas fa-play text-primary " },
+        }
+    });
+
     // Toggle loading ring
     const toggleBtn = () => {
         $calcBtn.find('.btnText').toggle();
@@ -110,23 +132,14 @@
         return chunks;
     };
 
-    // Interpolate Util functions for templates
-    String.prototype.interpolate = function (params) {
-        let newString = this;
-        Object.entries(params).forEach((replacePair) => {
-            newString = newString.replaceAll(`{${replacePair[0]}}`, replacePair[1]);
-        });
-        return newString;
-    };
-
     // Log util functions
     const clearLog = () => $details.find("div").text("");
     const updateLog = (batch, records) => {
         const $divs = $details.find('div');
-        if (glo.totalBatches > 1) {
-            $divs.first().text(glo.em.tt('log_batch').interpolate({
+        if (totalBatches > 1) {
+            $divs.first().text(glo.em.tt('log_batch', {
                 batchNumber: batch,
-                totalBatches: glo.totalBatches
+                totalBatches: totalBatches
             }));
         }
         records = (records == glo.records) || (records[0] == "*") ? [glo.em.tt('log_all')] : records;
@@ -138,7 +151,7 @@
             const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
             const min = String(rounddown(secondsSpent / 60)).padStart(2, '0');
             const sec = String(round(secondsSpent % 60)).padStart(2, '0');
-            $details.find('div').eq(glo.totalBatches > 1 ? 1 : 0).text(glo.em.tt('log_time') + `${min}:${sec}`)
+            $details.find('div').eq(totalBatches > 1 ? 1 : 0).text(glo.em.tt('log_time') + `${min}:${sec}`)
         };
         clock();
         glo.interval = setInterval(clock, 1000);
@@ -247,7 +260,7 @@
         clearLog();
         run = true;
         glo.recordBatches = batchArray(records, batchSize).reverse();
-        glo.totalBatches = glo.recordBatches.length;
+        totalBatches = glo.recordBatches.length;
         $table.collapse('hide');
         $table.find('table').DataTable().clear();
         startLogClock();
@@ -369,7 +382,7 @@
                     return;
                 }
                 localStorage.removeItem('RedcapEMcalcPreview');
-                let msg = preview ? glo.em.tt('msg_nopreview') : glo.em.tt('msg_success').interpolate({
+                let msg = preview ? glo.em.tt('msg_nopreview') : glo.em.tt('msg_success', {
                     count: totalChanges
                 });
                 Toast.fire({
