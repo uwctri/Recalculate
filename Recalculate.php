@@ -70,7 +70,7 @@ class Recalculate extends AbstractExternalModule
         foreach ($config as $name => $c) {
             if (count($c['post']) == 0) {
                 $errors[] = [
-                    "text" => str_replace("{property}", $name, $this->tt('error_missing')),
+                    "text" => $this->tt('error_missing', $name),
                     "display" => true
                 ];
                 continue;
@@ -83,7 +83,7 @@ class Recalculate extends AbstractExternalModule
             $intersection = array_intersect($c['post'], $c['valid']);
             if (count($intersection) != count($c['post'])) {
                 $errors[] = [
-                    "text" => str_replace("{property}", $name, $this->tt('error_invalid')),
+                    "text" => $this->tt('error_invalid', $name),
                     "display" => true
                 ];
             }
