@@ -63,7 +63,7 @@ class Recalculate extends AbstractExternalModule
         ];
 
         // Log the event
-        $action = $page == "api" ? "api" : "direct";
+        $action = $previewOnly ? "preview" : ($page == "api" ? "api" : "direct");
         $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
 
         // Validate submission
