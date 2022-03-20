@@ -27,6 +27,7 @@
     const $details = $(".detailsGrid");
     const $table = $("#previewTable");
     const $showEqCalcs = $("#equalCalcs");
+    const $bRow = $("#batchSizeRow");
 
     // Enable popovers, static button width, clear all prev values
     $('[data-toggle="popover"]').popover();
@@ -282,6 +283,10 @@
     $eventsSelect.on('change', () => $eventsSelect.removeClass('is-invalid'));
     $fieldsSelect.on('change', () => $fieldsSelect.removeClass('is-invalid'));
     $bSize.on('change', () => isInteger($bSize.val(), true) ? $bSize.removeClass('is-invalid') : $bSize.val(""));
+
+    // Advanced Button styling
+    $bRow.on('show.bs.collapse', () => { $('.fa-arrow-down').addClass('rotate') });
+    $bRow.on('hide.bs.collapse', () => { $('.fa-arrow-down').removeClass('rotate') });
 
     // Ajax for the post
     const sendRequest = (records, events, fields, preview, batchSize, batchNumber, totalChanges) => {

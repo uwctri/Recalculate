@@ -26,6 +26,4 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 
 ## TODO
 
-* Button to show the past data / card style?
-* Right click context menu to calc 1 row or page
-* Double clicking the "Advanced" button quick enough will mess up the arrow
+* Button to show the past data / card style? General Style issues
