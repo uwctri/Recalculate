@@ -244,7 +244,7 @@ class Recalculate extends AbstractExternalModule
     */
     private function userHasRights()
     {
-        return reset(Redcap::getUserRights())['data_quality_execute'] == "1";
+        return reset(REDCap::getUserRights(USERID))['data_quality_execute'] == "1";
     }
 
     /*

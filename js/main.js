@@ -1,4 +1,5 @@
 (() => {
+    console.log(glo);
     // Pop-up config
     const Toast = Swal.mixin({
         toast: true,
@@ -81,8 +82,8 @@
         if ($showEqCalcs.is(":checked")) {
             msg = glo.em.tt('select_table_show');
             $.fn.dataTable.ext.search.push(
-                (settings, data, dataIndex) => {
-                    return data[3] != data[4]
+                (settings, data, dataIndex, raw) => {
+                    return !raw['c'];
                 }
             )
         } else {
@@ -242,7 +243,7 @@
             run = false;
             return;
         }
-        if (action == "old") {
+        if (action == "old" && storage.data) {
             showTable();
             return;
         }
