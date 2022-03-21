@@ -102,6 +102,8 @@ class Recalculate extends AbstractExternalModule
                 if ($previewOnly) {
                     $tmp = Calculate::calculateMultipleFields($recordSubset, $fields, false, 'all');
                     if (count($tmp) > 0) {
+
+                        // Combine the array with rest of batches
                         $tmp = array_combine(array_map(function ($a) {
                             return '_' . $a;
                         }, array_keys($tmp)), array_values($tmp));
@@ -122,6 +124,16 @@ class Recalculate extends AbstractExternalModule
                         "text" => $calcUpdates,
                         "display" => false
                     ];
+                }
+            }
+        }
+
+        // For previews, search for data user can't access
+        if ($previewOnly) {
+            $rights = $this->getFieldAccessMap();
+            foreach ($rights as $field => $frights) {
+                if (!$frights['access']) {
+                    $this->censorData($preview, $field);
                 }
             }
         }
@@ -192,6 +204,41 @@ class Recalculate extends AbstractExternalModule
         if ($size > 400) return 5;
         if ($size > 60) return 20;
         return 100;
+    }
+
+    /*
+    Return a map from fields to forms/access rights to the field
+    */
+    private function getFieldAccessMap()
+    {
+        global $Proj;
+        $rights = reset(REDCap::getUserRights(USERID))['forms'];
+        $map = [];
+        foreach ($Proj->metadata as $attr) {
+            $map[$attr['field_name']] = [
+                "form" => $attr['form_name'],
+                "access" => $rights[$attr['form_name']] != "0"
+            ];
+        }
+        return $map;
+    }
+
+    private function censorData(array &$arr, $field)
+    {
+        foreach ($arr as $key => &$value) {
+            if (is_array($value)) {
+                $this->censorData($value, $field);
+            }
+            if ($key == $field) {
+                $value = array_merge(
+                    $value,
+                    [
+                        "saved" => "",
+                        "censor" => true
+                    ]
+                );
+            }
+        }
     }
 
     /*

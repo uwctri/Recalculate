@@ -65,7 +65,8 @@
         },
         {
             title: glo.em.tt('table_current'),
-            data: 'current'
+            data: 'current',
+            render: (data, type, row, meta) => row['censor'] ? `[${glo.em.tt('table_no_rights')}]` : data
         },
         {
             title: glo.em.tt('table_calc'),
@@ -82,8 +83,8 @@
         if ($showEqCalcs.is(":checked")) {
             msg = glo.em.tt('select_table_show');
             $.fn.dataTable.ext.search.push(
-                (settings, data, dataIndex, raw) => {
-                    return !raw['c'];
+                (settings, data, dataIndex, row) => {
+                    return !row['c'];
                 }
             )
         } else {
