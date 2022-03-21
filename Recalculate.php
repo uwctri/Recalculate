@@ -144,7 +144,6 @@ class Recalculate extends AbstractExternalModule
             'changes' => $updates,
             'errors' => $errors,
             'records' => $records,
-            'source' => $page,
             'preview' => $preview
         ]);
     }

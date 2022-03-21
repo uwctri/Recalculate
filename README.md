@@ -36,9 +36,8 @@ No defaults are assumed by the api, thus **all fields are requried**. The API to
 ```
 {
   "changes": 0,  // Number of total Changes
-  "errors": [],  // Any errors that occured, list of objects with the property "display" (bool) and "text" (string)
+  "errors":  [], // Any errors that occured, list of objects with the property "display" (bool) and "text" (string)
   "records": [], // List of strings, record IDs requested
-  "source": "api", // Always the string "api", used only internally
   "preview": []  // Always an empty array, used only internally
 }
 ```
