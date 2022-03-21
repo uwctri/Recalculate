@@ -1,6 +1,6 @@
 <?php
 
-namespace AbtAssoc\Recalculate;
+namespace UWMadison\Recalculate;
 
 use ExternalModules\AbstractExternalModule;
 use REDCap;

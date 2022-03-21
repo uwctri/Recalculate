@@ -177,6 +177,7 @@
         $dt.draw(false);
     };
 
+    // Toggle all collapses to show the table
     const showTable = () => {
         $table.collapse('show');
         $form.collapse('hide');
@@ -300,7 +301,7 @@
     $bRow.on('hide.bs.collapse', () => { $('#advRow i').removeClass('rotate') });
 
     // Reopen Styling
-    $reBtn.on('click', () => { $reBtn.collapse('hide') });
+    $form.on('show.bs.collapse', () => { $reBtn.collapse('hide') })
 
     // Ajax for the post
     const sendRequest = (records, events, fields, preview, batchSize, batchNumber, totalChanges) => {

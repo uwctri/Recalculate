@@ -4,12 +4,12 @@
     "description": "Compute values for Redcap calcuate fields by record, event, field, or any combination of.",
     "tt_description": "module_desc",
     "documentation": "README.md",
-    "namespace": "AbtAssoc\\Recalculate",
+    "namespace": "UWMadison\\Recalculate",
     "authors": [
         {
             "name": "Adam Nunez",
-            "email": "adam_nunez@abtassoc.com",
-            "institution": "Abt Associates"
+            "email": "Adam.Nunez@ctri.wisc.edu",
+            "institution": "UW Madison - Center for Tobacco Research and Intervention"
         }
     ],
     "permissions": [],
