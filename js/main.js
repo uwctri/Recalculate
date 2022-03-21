@@ -1,5 +1,4 @@
 (() => {
-    console.log(glo);
     // Pop-up config
     const Toast = Swal.mixin({
         toast: true,
