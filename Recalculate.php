@@ -222,6 +222,9 @@ class Recalculate extends AbstractExternalModule
         return $map;
     }
 
+    /*
+    Recursively search for a field and redact
+    */
     private function censorData(array &$arr, $field)
     {
         foreach ($arr as $key => &$value) {
