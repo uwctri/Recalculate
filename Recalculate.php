@@ -22,7 +22,7 @@ class Recalculate extends AbstractExternalModule
     */
     public function redcap_module_configure_button_display()
     {
-        return $this->isPage('ExternalModules/manager/control_center.php') || $this->userHasRights();
+        return $this->getProjectId() === null || $this->userHasRights();
     }
 
     /*
