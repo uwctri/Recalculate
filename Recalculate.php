@@ -23,7 +23,7 @@ class Recalculate extends AbstractExternalModule
     */
     public function redcap_module_configure_button_display()
     {
-        return $this->isPage('ExternalModules/manager/control_center.php') || $this->userHasRights();
+        return $this->getProjectId() === null || $this->userHasRights();
     }
 
     /*
@@ -238,6 +238,9 @@ class Recalculate extends AbstractExternalModule
         return $map;
     }
 
+    /*
+    Recursively search for a field and redact
+    */
     private function censorData(array &$arr, $field)
     {
         foreach ($arr as $key => &$value) {
