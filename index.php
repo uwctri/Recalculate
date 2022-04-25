@@ -103,7 +103,7 @@ $module->tt_transferToJavascriptModuleObject();
             <div style="grid-area:2/1/3/3;white-space:nowrap;"></div>
         </div>
         <div class="col-4">
-            <div id="recalcBtnGroup" class="btn-group float-right">
+            <div id="recalcBtnGroup" class="btn-group float-right text-nowrap">
                 <button id="recalc" type="button" class="btn btn-primary pr-0">
                     <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
                     <span class="hidden"><i class="ld ld-spin ld-ring"></i></span>
