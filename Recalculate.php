@@ -5,6 +5,7 @@ namespace UWMadison\Recalculate;
 use ExternalModules\AbstractExternalModule;
 use REDCap;
 use Calculate;
+use Project;
 
 class Recalculate extends AbstractExternalModule
 {
@@ -41,6 +42,11 @@ class Recalculate extends AbstractExternalModule
     */
     public function recalculate($fields, $events, $records, $previewOnly = false)
     {
+        // API calls need to have a new project instance created
+        if (!isSet($GLOBALS['Proj'])) {
+            $GLOBALS['Proj'] = $Proj = new Project();
+        }
+
         $errors = [];
         $eventNames = REDCap::getEventNames();
         $page = $_GET['page'];
@@ -68,6 +74,8 @@ class Recalculate extends AbstractExternalModule
 
         // Validate submission
         foreach ($config as $name => $c) {
+            
+            // Missing param
             if (count($c['post']) == 0) {
                 $errors[] = [
                     "text" => $this->tt('error_missing', $name),
@@ -75,11 +83,19 @@ class Recalculate extends AbstractExternalModule
                 ];
                 continue;
             }
+            
+            // Substitue in wild cards
             if (in_array($c['post'][0], ["all", "*"])) {
                 $config[$name]['post'] = $c['valid'];
                 $config[$name]['all'] = true;
                 continue;
             }
+            
+            // We can't validate events on an API call due to context
+            if ( $action == "api" && $name == "event" ) {
+                continue;
+            }
+            
             $intersection = array_intersect($c['post'], $c['valid']);
             if (count($intersection) != count($c['post'])) {
                 $errors[] = [
