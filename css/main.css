@@ -34,9 +34,11 @@
 }
 
 #previewTable {
-    margin-top: 4%;
+    margin: 4% 0 0 0;
     border: 2px #eeeeee solid;
     border-radius: 10px;
+    width: fit-content;
+    min-width: 100%;
 }
 
 #previewTable input {
