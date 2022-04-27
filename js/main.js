@@ -56,7 +56,7 @@
         {
             title: glo.em.tt('table_event'),
             data: 'event',
-            render: (data, type, row, meta) => glo.events[data]
+            render: (data, type, row, meta) => glo.events[data] || `[${glo.em.tt('table_unk_event', { event: data })}]`
         },
         {
             title: glo.em.tt('table_field'),
