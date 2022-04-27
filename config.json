@@ -13,7 +13,7 @@
         }
     ],
     "permissions": [],
-    "framework-version": 8,
+    "framework-version": 9,
     "no-auth-pages": [
         "api"
     ],
@@ -33,9 +33,22 @@
     "project-settings": [
         {
             "key": "api_token",
-            "name": "<b>API token</b><br>This token is project specific and visible to any user able to execute data quality rules",
+            "name": "<b>API token:</b><br>This token is project specific and visible to any user able to execute data quality rules",
             "tt_name": "module_token",
             "type": "text"
+        },
+        {
+            "key": "desc-whitelist",
+            "name": "By default all users that have access to execute data quality rules have access to the Recalculate EM. If you would like to limit that access further you may define a whitelist of users below. Only users on the whitelist will be able to use the Recalculate EM, edit this configuration, and view the above API key.",
+            "tt_name": "module_whitelist",
+            "type": "descriptive"
+        },
+        {
+            "key": "user-whitelist",
+            "name": "User",
+            "tt_name": "module_user",
+            "type": "user-list",
+            "repeatable": true
         }
     ],
     "system-settings": [

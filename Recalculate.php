@@ -19,7 +19,7 @@ class Recalculate extends AbstractExternalModule
 
     /*
     Redcap Hook. Prevent opening module config on the project if no user rights
-    Always allow in the control center
+    Always allow in the control center (no project id)
     */
     public function redcap_module_configure_button_display()
     {
@@ -43,7 +43,7 @@ class Recalculate extends AbstractExternalModule
     public function recalculate($fields, $events, $records, $previewOnly = false)
     {
         // API calls need to have a new project instance created
-        if (!isSet($GLOBALS['Proj'])) {
+        if (!isset($GLOBALS['Proj'])) {
             $GLOBALS['Proj'] = $Proj = new Project();
         }
 
@@ -74,7 +74,7 @@ class Recalculate extends AbstractExternalModule
 
         // Validate submission
         foreach ($config as $name => $c) {
-            
+
             // Missing param
             if (count($c['post']) == 0) {
                 $errors[] = [
@@ -83,19 +83,19 @@ class Recalculate extends AbstractExternalModule
                 ];
                 continue;
             }
-            
+
             // Substitue in wild cards
             if (in_array($c['post'][0], ["all", "*"])) {
                 $config[$name]['post'] = $c['valid'];
                 $config[$name]['all'] = true;
                 continue;
             }
-            
+
             // We can't validate events on an API call due to context
-            if ( $action == "api" && $name == "event" ) {
+            if ($action == "api" && $name == "event") {
                 continue;
             }
-            
+
             $intersection = array_intersect($c['post'], $c['valid']);
             if (count($intersection) != count($c['post'])) {
                 $errors[] = [
@@ -309,7 +309,11 @@ class Recalculate extends AbstractExternalModule
     */
     private function userHasRights()
     {
-        return reset(REDCap::getUserRights(USERID))['data_quality_execute'] == "1";
+        $user = $this->getUser();
+        if ($user->isSuperUser()) return true;
+        $whitelist = array_filter($this->getProjectSetting("user-whitelist"));
+        $dataQuality = reset($user->getRights())["data_quality_execute"] == "1";
+        return count($whitelist) > 0 ? in_array($user->getUsername(), $whitelist) : $dataQuality;
     }
 
     /*
