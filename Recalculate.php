@@ -29,6 +29,10 @@ class Recalculate extends AbstractExternalModule
         return $this->getProjectId() === null || $this->userHasRights();
     }
 
+    /*
+    Redcap Hook. Prevent opening module config on the project if no user rights
+    Always allow in the control center (no project id)
+    */
     public function process($tokenRequired)
     {
         global $Proj;
@@ -337,7 +341,7 @@ class Recalculate extends AbstractExternalModule
     /*
     Send 400 error with message
     */
-    protected static function errorResponse($message)
+    private static function errorResponse($message)
     {
         self::sendResponse(400, $message);
     }
@@ -345,7 +349,7 @@ class Recalculate extends AbstractExternalModule
     /*
     Send rest response with status and message
     */
-    protected static function sendResponse($status = 200, $response = '')
+    private static function sendResponse($status = 200, $response = '')
     {
         RestUtility::sendResponse($status, $response);
     }
