@@ -113,8 +113,8 @@ $module->tt_transferToJavascriptModuleObject();
                 </button>
                 <div class="dropdown-menu">
                     <a class="dropdown-item" data-action="preview" href="#"><?= $module->tt('button_preview'); ?></a>
-                    <a class="dropdown-item" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a>
-                    <a class="dropdown-item" data-action="old" href="#"><?= $module->tt('button_old'); ?></a>
+                    <a class="dropdown-item hidden" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a>
+                    <a class="dropdown-item hidden" data-action="old" href="#"><?= $module->tt('button_old'); ?></a>
                 </div>
             </div>
         </div>

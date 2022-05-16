@@ -115,7 +115,7 @@
             sendRequest([data.record.slice(1)], event, field, false, 0, 1, 0);
         },
         items: {
-            "run": { name: "Run Recalculation", icon: "fas fa-play text-primary " },
+            "run": { name: glo.em.tt("right_run"), icon: "fas fa-play text-primary " },
         }
     });
 
@@ -210,6 +210,7 @@
     // Load any previous table
     let storage = JSON.parse(localStorage.getItem("RedcapEMcalcPreview") || '{}');
     if (storage.data) {
+        $("#recalcBtnGroup .dropdown-item[data-action=old]").show();
         updatePreviewTable(storage.data);
     }
 
@@ -325,46 +326,35 @@
             method: 'POST',
             url: glo.router,
             data: {
-                route: preview ? 'preview' : 'recalculate',
+                action: preview ? 'preview' : 'calculate',
                 records: JSON.stringify(records),
                 events: events,
                 fields: fields,
-                redcap_csrf_token: glo.csrf
+                redcap_csrf_token: glo.csrf,
+                projectid: pid
             },
 
             // Only occurs on network or technical issue
             error: (jqXHR, textStatus, errorThrown) => {
                 toggleBtn();
-                console.log(`${jqXHR}\n${textStatus}\n${errorThrown}`)
-                Toast.fire({
+                stopLogClock();
+                run = false;
+                console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
+                Swal.fire({
                     icon: 'error',
-                    title: glo.em.tt('error_network')
+                    title: glo.em.tt('error_500'),
+                    text: glo.em.tt('error_500_text')
                 });
             },
 
             // Response returned from server
             success: (data) => {
-
-                // Check if a 500 error occured, possible memory issue
-                let fatal = false;
-                try {
-                    data = JSON.parse(data);
-                } catch {
-                    toggleBtn();
-                    run = false;
-                    fatal = true;
-                    Swal.fire({
-                        icon: "error",
-                        title: glo.em.tt('error_500'),
-                        text: glo.em.tt('error_500_text')
-                    })
-                }
                 console.log(data);
-                if (fatal) return;
 
                 // Server returned a validation error
                 if (data.errors.length) {
                     toggleBtn();
+                    stopLogClock();
                     run = false;
                     data.errors.forEach((err) => {
                         Toast.fire({

@@ -3,9 +3,12 @@
 namespace UWMadison\Recalculate;
 
 use ExternalModules\AbstractExternalModule;
+use ExternalModules\ExternalModules;
 use REDCap;
 use Calculate;
 use Project;
+use RestUtility;
+use SimpleXMLElement;
 
 class Recalculate extends AbstractExternalModule
 {
@@ -26,30 +29,38 @@ class Recalculate extends AbstractExternalModule
         return $this->getProjectId() === null || $this->userHasRights();
     }
 
-    /*
-    Redcap Hook. Create a reasonable project API key when enabled.
-    */
-    public function redcap_module_project_enable()
+    public function process($tokenRequired)
     {
-        if (empty($this->getProjectSetting('api_token'))) {
-            $this->setProjectSetting('api_token', $this->generateToken());
+        global $Proj;
+
+        $request = RestUtility::processRequest($tokenRequired);
+        $params = $request->getRequestVars();
+        $project_id = $params['projectid'];
+
+        // API calls need to have a new project instance created
+        if (!isset($Proj)) {
+            $Proj = new Project($project_id);
         }
+
+        // Only really needed for API, but just check for everyone
+        if (!$this->isModuleEnabledForProject($project_id)) {
+            self::errorResponse("The requested module is currently disabled on this project.");
+        }
+
+        // Run core code
+        $action = $params["action"] ?? "api";
+        $result =  $this->recalculate($params["fields"],$params["events"],$params["records"],$action);
+        return json_encode($result);
     }
 
     /*
-    Performs core functionality. Invoked via router/ajax/api.
+    Performs core functionality. Invoked via ajax/api.
     Fire the native redcap calculated field routines.
     */
-    public function recalculate($fields, $events, $records, $previewOnly = false)
+    private function recalculate($fields, $events, $records, $action)
     {
-        // API calls need to have a new project instance created
-        if (!isset($GLOBALS['Proj'])) {
-            $GLOBALS['Proj'] = $Proj = new Project();
-        }
-
         $errors = [];
         $eventNames = REDCap::getEventNames();
-        $page = $_GET['page'];
         $this->checkMemory();
 
         // Load everything into an array for easy looping
@@ -69,7 +80,6 @@ class Recalculate extends AbstractExternalModule
         ];
 
         // Log the event
-        $action = $previewOnly ? "preview" : ($page == "api" ? "api" : "direct");
         $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
 
         // Validate submission
@@ -115,7 +125,7 @@ class Recalculate extends AbstractExternalModule
             foreach ($recordBatches as $recordSubset) {
 
                 // Preview generation only
-                if ($previewOnly) {
+                if ($action == "preview") {
                     $tmp = Calculate::calculateMultipleFields($recordSubset, $fields, false, 'all');
                     if (count($tmp) > 0) {
 
@@ -145,7 +155,7 @@ class Recalculate extends AbstractExternalModule
         }
 
         // For previews, search for data user can't access
-        if ($previewOnly) {
+        if ($action == "preview") {
             $rights = $this->getFieldAccessMap();
             foreach ($rights as $field => $frights) {
                 if (!$frights['access']) {
@@ -156,12 +166,12 @@ class Recalculate extends AbstractExternalModule
 
         // Return values
         $records = $config['record']['all'] ? ['*'] : $config['record']['post'];
-        echo json_encode([
+        return [
             'changes' => $updates,
-            'errors' => $errors,
+            'errors'  => $errors,
             'records' => $records,
             'preview' => $preview
-        ]);
+        ];
     }
 
     /*
@@ -173,7 +183,7 @@ class Recalculate extends AbstractExternalModule
         $record = count($recordList) == 1 && $recordList[0] != "*" ? $recordList[0] : NULL;
         $event = count($eventList) == 1 && $eventList[0] != "*" ? $eventList[0] : NULL;
         $config = [
-            "direct" => [
+            "calculate" => [
                 "blurb" => "Recalculate",
                 "changes" => "Perfromed recalc for ..."
             ],
@@ -317,10 +327,26 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Generate a reasonable token
+    Check if module is enabled on project
     */
-    private function generateToken()
+    private function isModuleEnabledForProject($project_id)
     {
-        return strtoupper(md5(USERID . APP_PATH_WEBROOT_FULL  . generateRandomHash(mt_rand(64, 128))));
+        return ExternalModules::getProjectSetting($this->PREFIX, $project_id, ExternalModules::KEY_ENABLED);
+    }
+
+    /*
+    Send 400 error with message
+    */
+    protected static function errorResponse($message)
+    {
+        self::sendResponse(400, $message);
+    }
+
+    /*
+    Send rest response with status and message
+    */
+    protected static function sendResponse($status = 200, $response = '')
+    {
+        RestUtility::sendResponse($status, $response);
     }
 }
