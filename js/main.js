@@ -103,7 +103,7 @@
         selector: '#previewTable tr',
         callback: function (key, options) {
             if (key != "run" || run) return;
-            toggleBtn();
+            toggleLoading();
             clearLog();
             run = true;
             glo.recordBatches = [];
@@ -120,7 +120,8 @@
     });
 
     // Toggle loading ring
-    const toggleBtn = () => {
+    const toggleLoading = () => {
+        $calcBtn.parent().find(".dropdown-item[data-action=cancel]").toggle();
         $calcBtn.find('.btnText').toggle();
         $calcBtn.find('.ld').parent().toggle();
     };
@@ -210,7 +211,7 @@
     // Load any previous table
     let storage = JSON.parse(localStorage.getItem("RedcapEMcalcPreview") || '{}');
     if (storage.data) {
-        $("#recalcBtnGroup .dropdown-item[data-action=old]").show();
+        $calcBtn.parent().find(".dropdown-item[data-action=old]").show();
         updatePreviewTable(storage.data);
     }
 
@@ -271,7 +272,7 @@
         }
 
         // Send request
-        toggleBtn();
+        toggleLoading();
         clearLog();
         run = true;
         glo.recordBatches = batchArray(records, batchSize).reverse();
@@ -310,7 +311,7 @@
 
         // Bail if cancel was called
         if (!run) {
-            toggleBtn();
+            toggleLoading();
             stopLogClock();
             Toast.fire({
                 icon: 'info',
@@ -336,7 +337,7 @@
 
             // Only occurs on network or technical issue
             error: (jqXHR, textStatus, errorThrown) => {
-                toggleBtn();
+                toggleLoading();
                 stopLogClock();
                 run = false;
                 console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
@@ -353,7 +354,7 @@
 
                 // Server returned a validation error
                 if (data.errors.length) {
-                    toggleBtn();
+                    toggleLoading();
                     stopLogClock();
                     run = false;
                     data.errors.forEach((err) => {
@@ -382,7 +383,7 @@
                 }
 
                 // Single post or done with posts, she success toast
-                toggleBtn();
+                toggleLoading();
                 stopLogClock();
                 run = false;
                 if (preview && $table.is(":visible")) {
