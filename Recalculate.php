@@ -17,21 +17,19 @@ class Recalculate extends AbstractExternalModule
     */
     public function redcap_module_link_check_display($project_id, $link)
     {
-        return $this->userHasRights();
+        return $this->userHasRights() ? true : null;
     }
 
     /*
     Redcap Hook. Prevent opening module config on the project if no user rights
-    Always allow in the control center (no project id)
     */
     public function redcap_module_configure_button_display()
     {
-        return $this->getProjectId() === null || $this->userHasRights();
+        return $this->userHasRights() ? true : null;
     }
 
     /*
-    Redcap Hook. Prevent opening module config on the project if no user rights
-    Always allow in the control center (no project id)
+    Process a post request from API or router
     */
     public function process($tokenRequired)
     {
@@ -221,7 +219,8 @@ class Recalculate extends AbstractExternalModule
             "records" => $this->getAllRecordIds($events),
             "csrf"   => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
-            "em" => $this->getJavascriptModuleObjectName()
+            "em" => $this->getJavascriptModuleObjectName(),
+            "debug" => $this->getUser()->getRights()["data_quality_execute"] == "1"
         ];
     }
 
@@ -326,7 +325,7 @@ class Recalculate extends AbstractExternalModule
         $user = $this->getUser();
         if ($user->isSuperUser()) return true;
         $whitelist = array_filter($this->getProjectSetting("user-whitelist"));
-        $dataQuality = reset($user->getRights())["data_quality_execute"] == "1";
+        $dataQuality = $user->getRights()["data_quality_execute"] == "1";
         return count($whitelist) > 0 ? in_array($user->getUsername(), $whitelist) : $dataQuality;
     }
 
