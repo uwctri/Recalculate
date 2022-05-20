@@ -77,7 +77,11 @@
     translate: 0 8px;
 }
 
-.container button:hover, 
+.container button:hover,
 .container a:hover {
     outline: none;
+}
+
+.fa-play {
+    transform: translateY(2px);
 }

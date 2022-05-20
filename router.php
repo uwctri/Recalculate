@@ -1,8 +1,8 @@
 <?php
 
 try {
-    $result = $module->process(false);
-    RestUtility::sendResponse(200, $result, 'json');
+    $result = $module->process();
 } catch (Exception $ex) {
     RestUtility::sendResponse(400, $ex->getMessage());
 }
+RestUtility::sendResponse(200, $result);

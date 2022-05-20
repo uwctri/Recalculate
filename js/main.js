@@ -115,7 +115,7 @@
             sendRequest([data.record.slice(1)], event, field, false, 0, 1, 0);
         },
         items: {
-            "run": { name: glo.em.tt("right_run"), icon: "fas fa-play text-primary " },
+            "run": { name: glo.em.tt("right_run"), icon: "fas fa-play text-primary" },
         }
     });
 
