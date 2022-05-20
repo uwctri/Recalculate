@@ -21,7 +21,8 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Redcap Hook. Prevent opening module config on the project if no user rights
+    Redcap Hook. Prevent opening module config on the project if no user rights.
+    Only impacts the modal in projects, not in the admin panel.
     */
     public function redcap_module_configure_button_display()
     {
