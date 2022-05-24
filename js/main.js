@@ -4,7 +4,7 @@
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 5000,
+        timer: 30000,
         timerProgressBar: false,
         didOpen: (toast) => {
             toast.addEventListener('mouseenter', Swal.stopTimer)
@@ -121,7 +121,7 @@
 
     // Toggle loading ring
     const toggleLoading = () => {
-        $calcBtn.parent().find(".dropdown-item[data-action=cancel]").toggle();
+        $calcBtn.parent().find(".dropdown-item[data-action=cancel]").toggleClass('hidden');
         $calcBtn.find('.btnText').toggle();
         $calcBtn.find('.ld').parent().toggle();
     };
@@ -211,7 +211,7 @@
     // Load any previous table
     let storage = JSON.parse(localStorage.getItem("RedcapEMcalcPreview") || '{}');
     if (storage.data) {
-        $calcBtn.parent().find(".dropdown-item[data-action=old]").show();
+        $calcBtn.parent().find(".dropdown-item[data-action=old]").removeClass('hidden');
         updatePreviewTable(storage.data);
     }
 
@@ -382,7 +382,7 @@
                     return;
                 }
 
-                // Single post or done with posts, she success toast
+                // Single post or done with posts, show success toast
                 toggleLoading();
                 stopLogClock();
                 run = false;
