@@ -85,3 +85,11 @@
 .fa-play {
     transform: translateY(2px);
 }
+
+.custom-radio {
+    line-height: 22px;
+}
+
+.custom-control-label {
+    color: #6d6d6d;
+}

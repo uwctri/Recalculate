@@ -31,11 +31,13 @@
     const $bRow = $("#batchSizeRow");
     const $form = $("#primaryForm");
     const $reBtn = $("#reopenBtn");
+    const $errorStop = $("#onErrorStop");
 
     // Enable popovers, static button width, clear all prev values
     $('[data-toggle="popover"]').popover();
     $calcBtn.css('width', $calcBtn.css('width'));
     $("#center input").prop("checked", false).val("");
+    $errorStop.click();
 
     // Setup Table
     $table.find('table').DataTable({
@@ -353,7 +355,7 @@
                 console.log(data);
 
                 // Server returned a validation error
-                if (data.errors.length) {
+                if (data.errors.length && $errorStop.is(":checked")) {
                     toggleLoading();
                     stopLogClock();
                     run = false;

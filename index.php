@@ -67,20 +67,40 @@ $module->tt_transferToJavascriptModuleObject();
         <!-- Advanced Button -->
         <div id="advRow" class="row p-2">
             <div class="offset-2  col-10">
-                <a class="color-primary font-weight-bold" role="button" data-toggle="collapse" data-target="#batchSizeRow">
+                <a class="color-primary font-weight-bold" role="button" data-toggle="collapse" data-target="#advSettings">
                     <?= $module->tt('button_advanced'); ?>
                     <i class="fa fa-arrow-down"></i>
                 </a>
             </div>
         </div>
 
-        <!-- Batch Size -->
-        <div id="batchSizeRow" class="row p-2 collapse">
-            <label for="batchSize" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_batch'); ?></label>
-            <div class="col-10">
-                <input id="batchSize" name="batchSize" placeholder="all" type="text" aria-describedby="batchSizeHelpBlock" class="form-control">
-                <span id="batchSizeHelpBlock" class="form-text text-muted"><?= $module->tt('label_batch_help'); ?></span>
+        <!-- Advanced Settings -->
+        <div id="advSettings" class="collapse">
+
+            <!-- Batch Size -->
+            <div id="batchSizeRow" class="row p-2">
+                <label for="batchSize" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_batch'); ?></label>
+                <div class="col-10">
+                    <input id="batchSize" name="batchSize" placeholder="all" type="text" aria-describedby="batchSizeHelpBlock" class="form-control">
+                    <span id="batchSizeHelpBlock" class="form-text text-muted"><?= $module->tt('label_batch_help'); ?></span>
+                </div>
             </div>
+
+            <!-- On Error --> 
+            <div id="onErrorRow" class="row p-2">
+                <label for="onError" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_on_error'); ?></label>
+                <div class="col-10">
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" id="onErrorStop" name="onError">
+                        <label class="custom-control-label" for="onErrorStop"><?= $module->tt('label_on_error_a'); ?></label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" id="onErrorCont" name="onError">
+                        <label class="custom-control-label" for="onErrorCont"><?= $module->tt('label_on_error_b'); ?></label>
+                    </div>
+                </div>
+            </div>
+            
         </div>
 
     </div>
