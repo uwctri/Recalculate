@@ -325,7 +325,6 @@
 
         // Update the Detials area
         updateLog(batchNumber, records);
-        console.log(records, events, fields)
         $.ajax({
             method: 'POST',
             url: glo.router,
