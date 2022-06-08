@@ -64,6 +64,7 @@ class Recalculate extends AbstractExternalModule
     {
         $errors = [];
         $eventNames = REDCap::getEventNames();
+        $isClassic = !REDCap::isLongitudinal();
         $this->checkMemory();
 
         // Load everything into an array for easy looping
@@ -74,7 +75,7 @@ class Recalculate extends AbstractExternalModule
             ],
             "event" => [
                 "post" => array_map('trim', json_decode($events, true) ?? []),
-                "valid" => array_keys($eventNames),
+                "valid" => $isClassic ? ['all'] : array_keys($eventNames),
             ],
             "record" => [
                 "post" => array_map('trim', json_decode($records, true) ?? []),
@@ -142,12 +143,12 @@ class Recalculate extends AbstractExternalModule
                 }
 
                 // For specific event writes, flip through events or post 'all'
-                if ($config['event']['all']) $config['event']['post'] = 'all';
+                if ($config['event']['all']) $config['event']['post'] = ['all'];
                 foreach ($config['event']['post'] as $event_id) {
                     $calcUpdates = Calculate::saveCalcFields($recordSubset, $fields, $event_id);
                     if (is_numeric($calcUpdates)) {
                         $updates += $calcUpdates;
-                        break;
+                        continue;
                     }
                     $errors[] = [
                         "text" => $calcUpdates,
@@ -216,6 +217,7 @@ class Recalculate extends AbstractExternalModule
         $events = REDCap::getEventNames();
         return [
             "events" => $events,
+            "isClassic" => !REDCap::isLongitudinal(),
             "fields" => $this->getAllCalcFields(),
             "records" => $this->getAllRecordIds($events),
             "csrf"   => $this->getCSRFToken(),

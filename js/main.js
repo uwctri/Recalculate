@@ -58,7 +58,8 @@
         {
             title: glo.em.tt('table_event'),
             data: 'event',
-            render: (data, type, row, meta) => glo.events[data] || `[${glo.em.tt('table_unk_event', { event: data })}]`
+            render: (data, type, row, meta) => glo.events[data] || `[${glo.em.tt('table_unk_event', { event: data })}]`,
+            visible: !glo.isClassic
         },
         {
             title: glo.em.tt('table_field'),
@@ -324,7 +325,7 @@
 
         // Update the Detials area
         updateLog(batchNumber, records);
-
+        console.log(records, events, fields)
         $.ajax({
             method: 'POST',
             url: glo.router,
