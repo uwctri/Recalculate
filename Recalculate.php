@@ -222,8 +222,7 @@ class Recalculate extends AbstractExternalModule
             "records" => $this->getAllRecordIds($events),
             "csrf"   => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
-            "em" => $this->getJavascriptModuleObjectName(),
-            "debug" => $this->getUser()->getRights()["data_quality_execute"] == "1"
+            "em" => $this->getJavascriptModuleObjectName()
         ];
     }
 
