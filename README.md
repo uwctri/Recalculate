@@ -28,7 +28,6 @@ This module exposes a simple API to trigger recalcuations ...
 |   fields          |   Unique field names or '*' for all     |  json array  |
 |   events          |   Event IDs or '*' for all              |  json array  |
 |   records         |   Record IDs or '*' for all             |  json array  |
-|   pid             |   Project ID                            |  int         |
 
 No defaults are assumed by the api, thus **all fields are requried**. A parameter type of "json array" should always be an array, not a naked string. Errors are not returned for invalid event ids, the ids are simply thrown out.
 
