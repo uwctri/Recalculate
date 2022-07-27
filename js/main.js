@@ -352,7 +352,7 @@
 
             // Response returned from server
             success: (data) => {
-                console.log(data);
+                console.table(data);
 
                 // Server returned a validation error
                 if (data.errors.length && $errorStop.is(":checked")) {
