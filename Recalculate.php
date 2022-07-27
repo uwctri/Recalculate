@@ -8,7 +8,6 @@ use REDCap;
 use Calculate;
 use Project;
 use RestUtility;
-use SimpleXMLElement;
 
 class Recalculate extends AbstractExternalModule
 {
@@ -52,7 +51,7 @@ class Recalculate extends AbstractExternalModule
 
         // Run core code
         $action = $params["action"] ?? "api";
-        $result =  $this->recalculate($params["fields"],$params["events"],$params["records"],$action);
+        $result =  $this->recalculate($params["fields"], $params["events"], $params["records"], $action);
         return json_encode($result);
     }
 
