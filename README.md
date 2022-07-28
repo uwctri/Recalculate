@@ -6,7 +6,7 @@ This module allows you to calculate and save values for calc fields in a project
 
 Features:
 
-* Generate previews of incorrect calculations before executing them. 
+* Generate previews of incorrect calculations before executing them.
 * Execute a recalcuation on a single issue in your preview
 * The most recent preview of issues you genertate is cached so you can quickly load it later
 * Verbose logging
@@ -28,11 +28,11 @@ This module exposes a simple API to trigger recalcuations ...
 |   fields          |   Unique field names or '*' for all     |  json array  |
 |   events          |   Event IDs or '*' for all              |  json array  |
 |   records         |   Record IDs or '*' for all             |  json array  |
-|   pid             |   Project ID                            |  int         |
 
 No defaults are assumed by the api, thus **all fields are requried**. A parameter type of "json array" should always be an array, not a naked string. Errors are not returned for invalid event ids, the ids are simply thrown out.
 
 **Return Format**
+
 ```
 {
   "changes": 0,  // Number of total Changes
