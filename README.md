@@ -33,7 +33,7 @@ No defaults are assumed by the api, thus **all fields are requried**. A paramete
 
 **Return Format**
 
-```
+```json
 {
   "changes": 0,  // Number of total Changes
   "errors":  [], // Any errors that occured, list of objects with the property "display" (bool) and "text" (string)

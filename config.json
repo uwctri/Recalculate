@@ -33,7 +33,7 @@
     "project-settings": [
         {
             "key": "desc-whitelist",
-            "name": "By default all users that have access to execute data quality rules have access to the Recalculate EM. If you would like to limit that access further you may define a whitelist of users below. Only users on the whitelist will be able to use the Recalculate EM, edit this configuration, and view the above API key.",
+            "name": "By default all users that have access to execute data quality rules have access to the Recalculate EM. If you would like to limit that access further you may define a whitelist of users below. Only users on the whitelist will be able to use the Recalculate EM.",
             "tt_name": "module_whitelist",
             "type": "descriptive"
         },

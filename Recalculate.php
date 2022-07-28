@@ -46,7 +46,7 @@ class Recalculate extends AbstractExternalModule
 
         // Only really needed for API, but just check for everyone
         if (!$this->isModuleEnabledForProject($project_id)) {
-            self::errorResponse("The requested module is currently disabled on this project.");
+            RestUtility::sendResponse(400, "The requested module is currently disabled on this project.");
         }
 
         // Run core code
@@ -336,21 +336,5 @@ class Recalculate extends AbstractExternalModule
     private function isModuleEnabledForProject($project_id)
     {
         return ExternalModules::getProjectSetting($this->PREFIX, $project_id, ExternalModules::KEY_ENABLED);
-    }
-
-    /*
-    Send 400 error with message
-    */
-    private static function errorResponse($message)
-    {
-        self::sendResponse(400, $message);
-    }
-
-    /*
-    Send rest response with status and message
-    */
-    private static function sendResponse($status = 200, $response = '')
-    {
-        RestUtility::sendResponse($status, $response);
     }
 }
