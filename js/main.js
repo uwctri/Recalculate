@@ -167,6 +167,18 @@
     };
     const stopLogClock = () => clearInterval(clockInterval);
 
+    // Show a 500 error
+    const show500 = () => {
+        run = false;
+        toggleLoading();
+        stopLogClock();
+        Swal.fire({
+            icon: 'error',
+            title: glo.em.tt('error_500'),
+            text: glo.em.tt('error_500_text')
+        });
+    }
+
     // Generate the datatable given preview data
     const updatePreviewTable = (data) => {
         const gen = traverse(data);
@@ -339,20 +351,19 @@
 
             // Only occurs on network or technical issue
             error: (jqXHR, textStatus, errorThrown) => {
-                toggleLoading();
-                stopLogClock();
-                run = false;
                 console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
-                Swal.fire({
-                    icon: 'error',
-                    title: glo.em.tt('error_500'),
-                    text: glo.em.tt('error_500_text')
-                });
+                show500();
             },
 
             // Response returned from server
             success: (data) => {
                 console.log(data);
+
+                // Empty string, 500 error
+                if (typeof data == "string" && data.length === 0) {
+                    show500();
+                    return;
+                }
 
                 // Server returned a validation error
                 if (data.errors.length && $errorStop.is(":checked")) {
