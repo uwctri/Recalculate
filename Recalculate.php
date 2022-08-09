@@ -78,7 +78,7 @@ class Recalculate extends AbstractExternalModule
             ],
             "record" => [
                 "post" => array_map('trim', json_decode($records, true) ?? []),
-                "valid" => $this->getAllRecordIds($eventNames),
+                "valid" => $this->getAllRecordIds(),
             ]
         ];
 
@@ -213,12 +213,11 @@ class Recalculate extends AbstractExternalModule
     */
     public function loadSettings()
     {
-        $events = REDCap::getEventNames();
         return [
-            "events" => $events,
+            "events" => REDCap::getEventNames(),
             "isClassic" => !REDCap::isLongitudinal(),
             "fields" => $this->getAllCalcFields(),
-            "records" => $this->getAllRecordIds($events),
+            "records" => $this->getAllRecordIds(),
             "csrf"   => $this->getCSRFToken(),
             "router" => $this->getUrl('router.php'),
             "em" => $this->getJavascriptModuleObjectName()
@@ -310,12 +309,9 @@ class Recalculate extends AbstractExternalModule
     Return all records in the project, optionally pass events to
     speed up the data pull
     */
-    private function getAllRecordIds($events = null)
+    private function getAllRecordIds()
     {
-        if (is_null($events)) {
-            $events = REDCap::getEventNames();
-        }
-        return array_keys(REDCap::getData('array', null, REDCap::getRecordIdField(), array_keys($events)[0]));
+        return array_keys(REDCap::getData('array', null, REDCap::getRecordIdField()));
     }
 
     /*
