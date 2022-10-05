@@ -86,7 +86,7 @@ $module->tt_transferToJavascriptModuleObject();
                 </div>
             </div>
 
-            <!-- On Error --> 
+            <!-- On Error -->
             <div id="onErrorRow" class="row p-2">
                 <label for="onError" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_on_error'); ?></label>
                 <div class="col-10">
@@ -100,7 +100,7 @@ $module->tt_transferToJavascriptModuleObject();
                     </div>
                 </div>
             </div>
-            
+
         </div>
 
     </div>
@@ -135,6 +135,7 @@ $module->tt_transferToJavascriptModuleObject();
                     <a class="dropdown-item" data-action="preview" href="#"><?= $module->tt('button_preview'); ?></a>
                     <a class="dropdown-item hidden" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a>
                     <a class="dropdown-item hidden" data-action="old" href="#"><?= $module->tt('button_old'); ?></a>
+                    <a class="dropdown-item" data-action="cron" href="#"><?= $module->tt('button_cron'); ?></a>
                 </div>
             </div>
         </div>

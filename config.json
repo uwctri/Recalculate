@@ -1,7 +1,7 @@
 {
     "name": "Recalculate",
     "tt_name": "module_name",
-    "description": "Compute values for Redcap calcuate fields by record, event, field, or any combination of.",
+    "description": "Compute values for Redcap calcuate fields by record, event, field, or any combination of. Exposes an API for recalculations too.",
     "tt_description": "module_desc",
     "documentation": "README.md",
     "namespace": "UWMadison\\Recalculate",
@@ -43,6 +43,11 @@
             "tt_name": "module_user",
             "type": "user-list",
             "repeatable": true
+        },
+        {
+            "key": "crons",
+            "type": "textarea",
+            "hidden": true
         }
     ],
     "system-settings": [
@@ -51,6 +56,15 @@
             "name": "<b>Increase Usable Memory:</b><br>In MegaBytes (MB). Set PHP's 'memory_limit' to this value when performing recalculations. Useful if a project is reporting a memory issue when using this EM",
             "tt_name": "module_mem",
             "type": "text"
+        }
+    ],
+    "crons": [
+        {
+            "cron_name": "recalculate_user",
+            "cron_description": "Check for user configured recalculate crons",
+            "method": "run_cron",
+            "cron_frequency": 60,
+            "cron_max_run_time": 43200
         }
     ],
     "compatibility": {

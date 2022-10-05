@@ -56,6 +56,13 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
+    Process a post request from API or router
+    */
+    public function run_cron($cronInfo)
+    {
+    }
+
+    /*
     Performs core functionality. Invoked via ajax/api.
     Fire the native redcap calculated field routines.
     */

@@ -223,6 +223,33 @@
         }
     };
 
+    // Validate the forms data and highlight issues
+    const validate = () => {
+        // Grab all used values
+        const batchSize = $bSize.change().val() || 0;
+        const allFields = $allFields.is(':checked');
+        const allEvents = $allEvents.is(':checked');
+
+        const fields = allFields ? ['*'] : $fieldsSelect.val();
+        const events = (allEvents || !isLongitudinal) ? ['*'] : $eventsSelect.val();
+        let records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
+        records = records[0] == '*' && batchSize > 0 ? glo.records : records;
+
+        // Color missing fields (validation)
+        $fieldsSelect.addClass(fields.length ? '' : 'is-invalid');
+        $eventsSelect.addClass(events.length ? '' : 'is-invalid');
+        $recordsText.addClass(records.length ? '' : 'is-invalid');
+
+        // Exit if missing anything (validation)
+        if (!fields.length || !events.length || !records.length) {
+            return false;
+        }
+
+        return {
+            records, fields, events, batchSize
+        }
+    }
+
     // Load any previous table
     let storage = JSON.parse(localStorage.getItem("RedcapEMcalcPreview") || '{}');
     if (storage.data) {
@@ -254,37 +281,31 @@
     // Button trigger
     $("#recalc, #recalcBtnGroup .dropdown-item").on('click', (event) => {
 
-        // Check if we are already running, need cancel, or just want to view old table
+        // Check if we are already running, need cancel, or just want to view old table / open modal
         const action = $(event.currentTarget).data("action");
         if (action == "cancel") {
             run = false;
             return;
         }
-        if (action == "old" && storage.data) {
-            showTable();
+        if (action == "old") {
+            if (storage.data) showTable();
+            return;
+        }
+        if (action == "cron") {
+            // TODO Hide form
+            // Validate
+            // If valid give option to add the cron
+            // Show recent and scheduled crons
+            // Time, Records, Fields, Events, Status
+            console.log("Open Cron Display");
             return;
         }
         if (run) return;
 
-        // Grab all used values
-        const batchSize = $bSize.change().val() || 0;
-        const allFields = $allFields.is(':checked');
-        const allEvents = $allEvents.is(':checked');
-
-        const fields = allFields ? ['*'] : $fieldsSelect.val();
-        const events = (allEvents || !isLongitudinal) ? ['*'] : $eventsSelect.val();
-        let records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
-        records = records[0] == '*' && batchSize > 0 ? glo.records : records;
-
-        // Color missing fields (validation)
-        $fieldsSelect.addClass(fields.length ? '' : 'is-invalid');
-        $eventsSelect.addClass(events.length ? '' : 'is-invalid');
-        $recordsText.addClass(records.length ? '' : 'is-invalid');
-
-        // Exit if missing anything (validation)
-        if (!fields.length || !events.length || !records.length) {
-            return;
-        }
+        // Validation
+        const settings = validate();
+        if (!settings) return;
+        const { records, fields, events, batchSize } = settings;
 
         // Send request
         toggleLoading();
