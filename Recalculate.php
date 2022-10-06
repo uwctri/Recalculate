@@ -93,14 +93,15 @@ class Recalculate extends AbstractExternalModule
                     // Mark the cron as error
                     if ($expire > $cron["time"]) {
                         $crons[$index]["status"] = -1;
-                        $this->setProjectSetting('cron', json_encode(array_values($crons)));
+                        $this->setProjectSetting('cron', json_encode($crons));
                     }
                     // Run the cron
                     elseif ($time > $cron["time"] && $cron["status"] == 0) {
 
                         // Set to running
                         $crons[$index]["status"] = 1;
-                        $this->setProjectSetting('cron', json_encode(array_values($crons)));
+                        $this->setProjectSetting('cron', json_encode($crons));
+                        $this->projectLog("cron", $cron["fields"], $cron["events"], $cron["records"]);
 
                         // Perform recalcs
                         $records = array_map('trim', json_decode($cron["records"], true) ?? []);
@@ -113,7 +114,8 @@ class Recalculate extends AbstractExternalModule
 
                         // Done
                         $crons[$index]["status"] = 2;
-                        $this->setProjectSetting('cron', json_encode(array_values($crons)));
+                        $crons[$index]["completion"] = 2;
+                        $this->setProjectSetting('cron', json_encode($crons));
                         return; // Only run one at a time
                     }
                 } elseif ($large && ($veryOld > $cron["time"])) {
@@ -124,7 +126,7 @@ class Recalculate extends AbstractExternalModule
             }
             // Perform a save to be safe, maybe we only removed old entries
             if ($save) {
-                $this->setProjectSetting('cron', json_encode(array_values($crons)));
+                $this->setProjectSetting('cron', json_encode($crons));
             }
         }
 
@@ -181,8 +183,10 @@ class Recalculate extends AbstractExternalModule
             ]
         ];
 
-        // Log the event
-        $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
+        // Log the event (cron currently logs itself)
+        if ($action != "cron") {
+            $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
+        }
 
         // Validate submission
         foreach ($config as $name => $c) {
@@ -282,6 +286,11 @@ class Recalculate extends AbstractExternalModule
     private function projectLog($action, $fieldList, $eventList, $recordList)
     {
         $sql = null;
+        if ($action == "cron") { // wastefull
+            $fieldList = array_map('trim', json_decode($fieldList, true) ?? ['*']);
+            $eventList = array_map('trim', json_decode($eventList, true) ?? ['*']);
+            $recordList = array_map('trim', json_decode($recordList, true) ?? ['*']);
+        }
         $record = count($recordList) == 1 && $recordList[0] != "*" ? $recordList[0] : NULL;
         $event = count($eventList) == 1 && $eventList[0] != "*" ? $eventList[0] : NULL;
         $config = [
@@ -302,17 +311,11 @@ class Recalculate extends AbstractExternalModule
                 "changes" => "Perfromed recalc for ..."
             ]
         ];
-        if ($config[$action] == "cron") {
-            $fieldList = empty($fieldList) ? ['*'] : $fieldList;
-            $eventList = empty($eventList) ? ['*'] : $eventList;
-        }
-        if (!empty($config[$action])) {
-            $fields = implode(', ', $fieldList);
-            $events = implode(', ', $eventList);
-            $records = implode(', ', $recordList);
-            $changes = $config[$action]["changes"] . "\nFields = $fields\nEvents = $events\nRecords = $records";
-            REDCap::logEvent($config[$action]["blurb"], $changes, $sql, $record, $event);
-        }
+        $fields = implode(', ', $fieldList);
+        $events = implode(', ', $eventList);
+        $records = implode(', ', $recordList);
+        $changes = $config[$action]["changes"] . "\nFields = $fields\nEvents = $events\nRecords = $records";
+        REDCap::logEvent($config[$action]["blurb"], $changes, $sql, $record, $event);
     }
 
     /*
@@ -321,7 +324,7 @@ class Recalculate extends AbstractExternalModule
     public function loadSettings()
     {
         $json = $this->getProjectSetting('cron');
-        $json = empty($json) ? [] : json_decode($json, true);
+        $json = empty($json) ? [] : array_values(json_decode($json, true));
         return [
             "crons" => $json,
             "events" => REDCap::getEventNames(),
