@@ -11,6 +11,9 @@ use RestUtility;
 
 class Recalculate extends AbstractExternalModule
 {
+    private $oneMonth = (60 * 60 * 24 * 30);
+    private $maxCrons = 120;
+
     /*
     Redcap Hook. Allow nav to the index page only if user rights are met
     */
@@ -68,18 +71,21 @@ class Recalculate extends AbstractExternalModule
         // Stash original PID, probably not needed, but docs recommend
         $originalPid = $_GET['pid'];
         $maxTime = $cronInfo["cron_max_run_time"];
+        global $Proj;
 
         // Loop over every pid using this EM
         foreach ($this->getProjectsWithModuleEnabled() as $pid) {
 
             // Act like we are in that project
             $_GET['pid'] = $pid;
+            $Proj = new Project($pid);
+            define('PROJECT_ID', $pid);
             $time = gmdate('Y-m-d\TH:i:s.000\Z'); // ISO time in same format as JS
             $expire = gmdate('Y-m-d\TH:i:s.000\Z', time() - $maxTime);
-            $veryOld = gmdate('Y-m-d\TH:i:s.000\Z', time() - (60 * 60 * 24 * 30));
+            $veryOld = gmdate('Y-m-d\TH:i:s.000\Z', time() - $this->oneMonth);
             $crons = $this->getProjectSetting('cron');
             $crons = empty($crons) ? [] : json_decode($crons, true);
-            $large = count($crons) > 100;
+            $large = count($crons) > $this->maxCrons;
             $save = false;
             foreach ($crons as $index => $cron) {
                 if (in_array($cron["status"], [0, 1])) { // Running or Scheduled
@@ -102,7 +108,7 @@ class Recalculate extends AbstractExternalModule
                             $records = $this->getAllRecordIds();
                         }
                         foreach ($records as $record) {
-                            $this->recalculate($cron["fields"], $cron["events"], $record, "calculate");
+                            $this->recalculate($cron["fields"], $cron["events"], "[$record]", "cron");
                         }
 
                         // Done
@@ -290,8 +296,16 @@ class Recalculate extends AbstractExternalModule
             "preview" => [
                 "blurb" => "Recalculate Preview",
                 "changes" => "Generated preview for ..."
+            ],
+            "cron" => [
+                "blurb" => "Scheduled Recalculate",
+                "changes" => "Perfromed recalc for ..."
             ]
         ];
+        if ($config[$action] == "cron") {
+            $fieldList = empty($fieldList) ? ['*'] : $fieldList;
+            $eventList = empty($eventList) ? ['*'] : $eventList;
+        }
         if (!empty($config[$action])) {
             $fields = implode(', ', $fieldList);
             $events = implode(', ', $eventList);

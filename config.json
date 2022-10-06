@@ -46,7 +46,8 @@
         },
         {
             "key": "cron",
-            "type": "textarea"
+            "type": "textarea",
+            "hidden": true
         }
     ],
     "system-settings": [
