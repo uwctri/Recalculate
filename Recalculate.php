@@ -77,7 +77,7 @@ class Recalculate extends AbstractExternalModule
             $time = gmdate('Y-m-d\TH:i:s.000\Z'); // ISO time in same format as JS
             $expire = gmdate('Y-m-d\TH:i:s.000\Z', time() - $maxTime);
             $crons = $this->getProjectSetting('cron');
-            $crons = empty($json) ? [] : json_decode($crons, true);
+            $crons = empty($crons) ? [] : json_decode($crons, true);
             foreach ($crons as $index => $cron) {
                 if ($cron["status"] == 0) {
 
