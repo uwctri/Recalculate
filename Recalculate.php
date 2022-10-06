@@ -75,19 +75,19 @@ class Recalculate extends AbstractExternalModule
             // Act like we are in that project
             $_GET['pid'] = $pid;
             $time = gmdate('Y-m-d\TH:i:s.000\Z'); // ISO time in same format as JS
-            $expire = gmdate('Y-m-d\TH:i:s.000\Z', time() + $maxTime);
+            $expire = gmdate('Y-m-d\TH:i:s.000\Z', time() - $maxTime);
             $crons = $this->getProjectSetting('cron');
             $crons = empty($json) ? [] : json_decode($crons, true);
             foreach ($crons as $index => $cron) {
                 if ($cron["status"] == 0) {
 
                     // Mark the cron as error
-                    if ($cron["status"] == 0 && $cron["time"] > $expire) {
+                    if ($expire > $cron["time"]) {
                         $crons[$index]["status"] = -1;
                         $this->setProjectSetting('cron', json_encode($crons));
                     }
                     // Run the cron
-                    elseif ($cron["time"] > $time) {
+                    elseif ($time > $cron["time"]) {
                         // TODO
                         $crons[$index]["status"] = 1;
                         $this->setProjectSetting('cron', json_encode($crons));
