@@ -76,20 +76,27 @@ class Recalculate extends AbstractExternalModule
             $_GET['pid'] = $pid;
             $time = gmdate('Y-m-d\TH:i:s.000\Z'); // ISO time in same format as JS
             $expire = gmdate('Y-m-d\TH:i:s.000\Z', time() - $maxTime);
+            $veryOld = gmdate('Y-m-d\TH:i:s.000\Z', time() - (60 * 60 * 24 * 30));
             $crons = $this->getProjectSetting('cron');
             $crons = empty($crons) ? [] : json_decode($crons, true);
+            $large = count($crons) > 100;
+            $save = false;
             foreach ($crons as $index => $cron) {
                 if (in_array($cron["status"], [0, 1])) { // Running or Scheduled
 
                     // Mark the cron as error
                     if ($expire > $cron["time"]) {
                         $crons[$index]["status"] = -1;
-                        $this->setProjectSetting('cron', json_encode($crons));
+                        $this->setProjectSetting('cron', json_encode(array_values($crons)));
                     }
                     // Run the cron
                     elseif ($time > $cron["time"] && $cron["status"] == 0) {
+
+                        // Set to running
                         $crons[$index]["status"] = 1;
-                        $this->setProjectSetting('cron', json_encode($crons));
+                        $this->setProjectSetting('cron', json_encode(array_values($crons)));
+
+                        // Perform recalcs
                         $records = array_map('trim', json_decode($cron["records"], true) ?? []);
                         if (count($records) == 0 || (count($records) == 1 && $records[0] == "*")) {
                             $records = $this->getAllRecordIds();
@@ -97,11 +104,21 @@ class Recalculate extends AbstractExternalModule
                         foreach ($records as $record) {
                             $this->recalculate($cron["fields"], $cron["events"], $record, "calculate");
                         }
+
+                        // Done
                         $crons[$index]["status"] = 2;
-                        $this->setProjectSetting('cron', json_encode($crons));
+                        $this->setProjectSetting('cron', json_encode(array_values($crons)));
                         return; // Only run one at a time
                     }
+                } elseif ($large && ($veryOld > $cron["time"])) {
+                    // Remove old entry
+                    unset($crons[$index]);
+                    $save = true;
                 }
+            }
+            // Perform a save to be safe, maybe we only removed old entries
+            if ($save) {
+                $this->setProjectSetting('cron', json_encode(array_values($crons)));
             }
         }
 
