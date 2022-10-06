@@ -30,7 +30,7 @@ $module->tt_transferToJavascriptModuleObject();
         <div class="row p-2">
             <label for="records" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_record'); ?></label>
             <div class="col-10">
-                <input id="records" name="records" placeholder="record_1, record_2 etc" type="text" class="form-control">
+                <input id="records" name="records" placeholder="<?= $module->tt('placeholder_record'); ?>" type="text" class="form-control">
                 <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="<?= $module->tt('select_record'); ?>">
                     <input type="checkbox" class="custom-control-input" id="allRecords" data-state="0">
                     <label class="custom-control-label" for="allRecords"></label>
@@ -116,7 +116,7 @@ $module->tt_transferToJavascriptModuleObject();
     </div>
 
     <!-- Go Button & Details -->
-    <div class="row p-2">
+    <div class="row p-2 collapse show" id="recalcBtnRow">
         <div class="offset-2 col-6 detailsGrid">
             <div></div>
             <div></div>
@@ -147,6 +147,35 @@ $module->tt_transferToJavascriptModuleObject();
             <input type="checkbox" class="custom-control-input" id="equalCalcs" data-state="1">
             <label class="custom-control-label" for="equalCalcs"></label>
         </div>
+        <div class="col-12">
+            <table style="width:100%" class="table"></table>
+        </div>
+    </div>
+
+    <!-- Scheduled To Run Button -->
+    <div class="row p-2 collapse mb-4" id="schBtnRow">
+        <label for="records" class="col-3 col-form-label font-weight-bold"><?= $module->tt('label_time'); ?></label>
+        <div class="col-5">
+            <input id="cronTime" placeholder="<?= $module->tt('placeholder_date'); ?>" type="text" class="form-control">
+        </div>
+        <div class="col-4">
+            <button type="button" data-action="makeCron" class="btn btn-primary float-right">
+                <span class="btnText"> <?= $module->tt('button_cron'); ?> </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Can't Schedule Cron -->
+    <div class="row p-2 collapse" id="noschRow">
+        <div class="col-12">
+            <div class="alert alert-primary" role="alert">
+                <?= $module->tt('label_no_sch'); ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scheduled Reclacs -->
+    <div id="cronTable" class="row p-2 collapse">
         <div class="col-12">
             <table style="width:100%" class="table"></table>
         </div>

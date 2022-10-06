@@ -220,7 +220,10 @@ class Recalculate extends AbstractExternalModule
     */
     public function loadSettings()
     {
+        $json = $this->getProjectSetting('cron');
+        $json = empty($json) ? [] : json_decode($json, true);
         return [
+            "crons" => $json,
             "events" => REDCap::getEventNames(),
             "isClassic" => !REDCap::isLongitudinal(),
             "fields" => $this->getAllCalcFields(),

@@ -17,6 +17,7 @@
     let run = false;
     let totalBatches = -1;
     let clockInterval = -1;
+    const statusMap = { "-1": glo.em.tt("status_error"), "0": glo.em.tt("status_scheduled"), "1": glo.em.tt("status_complete") };
     const $calcBtn = $("#recalc");
     const $eventsSelect = $("#events");
     const $fieldsSelect = $("#fields");
@@ -32,6 +33,10 @@
     const $form = $("#primaryForm");
     const $reBtn = $("#reopenBtn");
     const $errorStop = $("#onErrorStop");
+    const $recalcBtn = $("#recalcBtnRow");
+    const $cronTable = $("#cronTable");
+    const $cronBtn = $("#schBtnRow");
+    const $noCronBtn = $("#noschRow");
 
     // Enable popovers, static button width, clear all prev values
     $('[data-toggle="popover"]').popover();
@@ -39,7 +44,7 @@
     $("#center input").prop("checked", false).val("");
     $errorStop.click();
 
-    // Setup Table
+    // Setup "Generate Preview" Table
     $table.find('table').DataTable({
         data: [],
         pageLength: 40,
@@ -50,30 +55,31 @@
             emptyTable: glo.em.tt('table_empty'),
             zeroRecords: glo.em.tt('table_empty')
         },
-        columns: [{
-            title: glo.em.tt('table_record'),
-            data: 'record',
-            render: (data, type, row, meta) => data.slice(1)
-        },
-        {
-            title: glo.em.tt('table_event'),
-            data: 'event',
-            render: (data, type, row, meta) => glo.events[data] || `[${glo.em.tt('table_unk_event', { event: data })}]`,
-            visible: !glo.isClassic
-        },
-        {
-            title: glo.em.tt('table_field'),
-            data: 'field'
-        },
-        {
-            title: glo.em.tt('table_current'),
-            data: 'current',
-            render: (data, type, row, meta) => row['censor'] ? `[${glo.em.tt('table_no_rights')}]` : data
-        },
-        {
-            title: glo.em.tt('table_calc'),
-            data: 'calc'
-        }
+        columns: [
+            {
+                title: glo.em.tt('table_record'),
+                data: 'record',
+                render: (data, type, row, meta) => data.slice(1)
+            },
+            {
+                title: glo.em.tt('table_event'),
+                data: 'event',
+                render: (data, type, row, meta) => glo.events[data] || `[${glo.em.tt('table_unk_event', { event: data })}]`,
+                visible: !glo.isClassic
+            },
+            {
+                title: glo.em.tt('table_field'),
+                data: 'field'
+            },
+            {
+                title: glo.em.tt('table_current'),
+                data: 'current',
+                render: (data, type, row, meta) => row['censor'] ? `[${glo.em.tt('table_no_rights')}]` : data
+            },
+            {
+                title: glo.em.tt('table_calc'),
+                data: 'calc'
+            }
         ]
     });
 
@@ -120,6 +126,45 @@
         items: {
             "run": { name: glo.em.tt("right_run"), icon: "fas fa-play text-primary" },
         }
+    });
+
+    // Setup "Schedulaed Cron" table
+    $cronTable.find('table').DataTable({
+        data: glo.crons,
+        pageLength: 40,
+        dom: `<'row'<'col-sm-10'f>>
+              <'row'<'col-sm-12'tr>>"
+              <'row'<'col-sm-12 col-md-6 small'i><'col-sm-12 col-md-6'p>>`,
+        language: {
+            emptyTable: glo.em.tt('cron_table_empty'),
+            zeroRecords: glo.em.tt('cron_table_empty')
+        },
+        columns: [
+            {
+                title: glo.em.tt('cron_table_time'),
+                data: 'time'
+            },
+            {
+                title: glo.em.tt('cron_table_records'),
+                data: 'records',
+                render: (data, type, row, meta) => data.slice(0, 50)
+            },
+            {
+                title: glo.em.tt('cron_table_events'),
+                data: 'events',
+                render: (data, type, row, meta) => data.slice(0, 50)
+            },
+            {
+                title: glo.em.tt('cron_table_fields'),
+                data: 'fields',
+                render: (data, type, row, meta) => data.slice(0, 50)
+            },
+            {
+                title: glo.em.tt('cron_table_status'),
+                data: 'status',
+                render: (data, type, row, meta) => statusMap[data]
+            }
+        ]
     });
 
     // Toggle loading ring
@@ -292,12 +337,18 @@
             return;
         }
         if (action == "cron") {
-            // TODO Hide form
-            // Validate
-            // If valid give option to add the cron
-            // Show recent and scheduled crons
-            // Time, Records, Fields, Events, Status
-            console.log("Open Cron Display");
+            $table.collapse('hide');
+            $form.collapse('hide');
+            $reBtn.collapse('show');
+            $recalcBtn.collapse('hide');
+            $cronTable.collapse('show');
+            const settings = validate();
+            if (!settings) {
+                $noCronBtn.collapse('show');
+            } else {
+                $cronBtn.collapse('show');
+                // TODO Add cron form (make it function)
+            }
             return;
         }
         if (run) return;
@@ -340,7 +391,13 @@
     $bRow.on('hide.bs.collapse', () => { $('#advRow i').removeClass('rotate') });
 
     // Reopen Styling
-    $form.on('show.bs.collapse', () => { $reBtn.collapse('hide') })
+    $form.on('show.bs.collapse', () => {
+        $reBtn.collapse('hide');
+        $recalcBtn.collapse('show');
+        $cronTable.collapse('hide');
+        $noCronBtn.collapse('hide');
+        $cronBtn.collapse('hide')
+    });
 
     // Ajax for the post
     const sendRequest = (records, events, fields, preview, batchSize, batchNumber, totalChanges) => {
