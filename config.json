@@ -45,9 +45,8 @@
             "repeatable": true
         },
         {
-            "key": "crons",
-            "type": "textarea",
-            "hidden": true
+            "key": "cron",
+            "type": "textarea"
         }
     ],
     "system-settings": [

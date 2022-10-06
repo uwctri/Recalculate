@@ -51,15 +51,40 @@ class Recalculate extends AbstractExternalModule
 
         // Run core code
         $action = $params["action"] ?? "api";
-        $result =  $this->recalculate($params["fields"], $params["events"], $params["records"], $action);
+        $result = [];
+        if ($action == "cron") {
+            $result = $this->setup_cron($params["fields"], $params["events"], $params["records"], $params["time"]);
+        } else {
+            $result =  $this->recalculate($params["fields"], $params["events"], $params["records"], $action);
+        }
         return json_encode($result);
     }
 
     /*
-    Process a post request from API or router
+    Cron job method to check if any user defined recalcs should run
     */
     public function run_cron($cronInfo)
     {
+    }
+
+    /*
+    Setup a new user defined cron
+    */
+    private function setup_cron($fields, $events, $records, $time)
+    {
+        $json = $this->getProjectSetting('cron');
+        $json = empty($json) ? [] : json_decode($json, true);
+        $json[] = [
+            "fields" => $fields,
+            "events" => $events,
+            "records" => $records,
+            "time" => $time,
+            "status" => 0
+        ];
+        $this->setProjectSetting('cron', json_encode($json));
+        return [
+            "errors" =>  []
+        ];
     }
 
     /*

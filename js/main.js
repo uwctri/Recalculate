@@ -37,12 +37,17 @@
     const $cronTable = $("#cronTable");
     const $cronBtn = $("#schBtnRow");
     const $noCronBtn = $("#noschRow");
+    const $cronTime = $("#cronTime");
 
     // Enable popovers, static button width, clear all prev values
     $('[data-toggle="popover"]').popover();
     $calcBtn.css('width', $calcBtn.css('width'));
     $("#center input").prop("checked", false).val("");
     $errorStop.click();
+    $cronTime.datetimepicker({
+        ampm: true,
+        timeFormat: 'hh:mm tt'
+    });
 
     // Setup "Generate Preview" Table
     $table.find('table').DataTable({
@@ -142,22 +147,27 @@
         columns: [
             {
                 title: glo.em.tt('cron_table_time'),
-                data: 'time'
+                data: 'time',
+                render: (data, type, row, meta) => {
+                    if (type != 'display') return data;
+                    data = new Date(data);
+                    return data.toLocaleString().replace(',', '').replace(':00 ', '').toLowerCase();
+                },
             },
             {
                 title: glo.em.tt('cron_table_records'),
                 data: 'records',
-                render: (data, type, row, meta) => data.slice(0, 50)
+                render: (data, type, row, meta) => data.join(', ').slice(0, 50)
             },
             {
                 title: glo.em.tt('cron_table_events'),
                 data: 'events',
-                render: (data, type, row, meta) => data.slice(0, 50)
+                render: (data, type, row, meta) => data.join(', ').slice(0, 50)
             },
             {
                 title: glo.em.tt('cron_table_fields'),
                 data: 'fields',
-                render: (data, type, row, meta) => data.slice(0, 50)
+                render: (data, type, row, meta) => data.join(', ').slice(0, 50)
             },
             {
                 title: glo.em.tt('cron_table_status'),
@@ -213,7 +223,8 @@
     const stopLogClock = () => clearInterval(clockInterval);
 
     // Show a 500 error
-    const show500 = () => {
+    const show500 = (cronError = false) => {
+        let errorText = cronError ? glo.em.tt('error_cron') : glo.em.tt('error_500_text')
         run = false;
         toggleLoading();
         stopLogClock();
@@ -324,18 +335,24 @@
     });
 
     // Button trigger
-    $("#recalc, #recalcBtnGroup .dropdown-item").on('click', (event) => {
+    $(".container [data-action]").on('click', (event) => {
 
         // Check if we are already running, need cancel, or just want to view old table / open modal
         const action = $(event.currentTarget).data("action");
+
+        // Cancel Current Action
         if (action == "cancel") {
             run = false;
             return;
         }
+
+        // Show the old generated preview table
         if (action == "old") {
             if (storage.data) showTable();
             return;
         }
+
+        // Show the Schedule Cron area
         if (action == "cron") {
             $table.collapse('hide');
             $form.collapse('hide');
@@ -347,11 +364,60 @@
                 $noCronBtn.collapse('show');
             } else {
                 $cronBtn.collapse('show');
-                // TODO Add cron form (make it function)
             }
             return;
         }
+
+        // Write the cron back to settings
+        if (action == "makeCron") {
+            const settings = validate();
+            if (!settings) return;
+            let time = new Date($("#cronTime").val());
+            time = time.toJSON();
+
+            $.ajax({
+                method: 'POST',
+                url: glo.router,
+                data: {
+                    ...settings,
+                    time,
+                    action: 'cron',
+                    redcap_csrf_token: glo.csrf,
+                    projectid: pid
+                },
+
+                // Only occurs on network or technical issue
+                error: (jqXHR, textStatus, errorThrown) => {
+                    console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
+                    show500(true);
+                },
+
+                // Response returned from server
+                success: (data) => {
+                    console.log(data);
+
+                    // 500 error
+                    if ((typeof data == "string" && data.length === 0) || data.errors.length) {
+                        show500(true);
+                        return;
+                    }
+
+                    $cronTable.find('table').DataTable().row.add({
+                        ...settings,
+                        time,
+                        status: 0
+                    }).draw();
+                    Toast.fire({
+                        icon: 'success',
+                        title: glo.em.tt('msg_cron')
+                    });
+                }
+            });
+
+            return
+        }
         if (run) return;
+        // Preview and Real Run below
 
         // Validation
         const settings = validate();
