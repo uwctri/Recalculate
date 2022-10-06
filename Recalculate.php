@@ -79,7 +79,7 @@ class Recalculate extends AbstractExternalModule
             $crons = $this->getProjectSetting('cron');
             $crons = empty($crons) ? [] : json_decode($crons, true);
             foreach ($crons as $index => $cron) {
-                if ($cron["status"] == 0) {
+                if (in_array($cron["status"], [0, 1])) { // Running or Scheduled
 
                     // Mark the cron as error
                     if ($expire > $cron["time"]) {
@@ -87,7 +87,7 @@ class Recalculate extends AbstractExternalModule
                         $this->setProjectSetting('cron', json_encode($crons));
                     }
                     // Run the cron
-                    elseif ($time > $cron["time"]) {
+                    elseif ($time > $cron["time"] && $cron["status"] == 0) {
                         $crons[$index]["status"] = 1;
                         $this->setProjectSetting('cron', json_encode($crons));
                         $records = array_map('trim', json_decode($cron["records"], true) ?? []);
@@ -99,6 +99,7 @@ class Recalculate extends AbstractExternalModule
                         }
                         $crons[$index]["status"] = 2;
                         $this->setProjectSetting('cron', json_encode($crons));
+                        return; // Only run one at a time
                     }
                 }
             }
