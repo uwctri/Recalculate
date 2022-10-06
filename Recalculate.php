@@ -88,8 +88,16 @@ class Recalculate extends AbstractExternalModule
                     }
                     // Run the cron
                     elseif ($time > $cron["time"]) {
-                        // TODO
                         $crons[$index]["status"] = 1;
+                        $this->setProjectSetting('cron', json_encode($crons));
+                        $records = array_map('trim', json_decode($cron["records"], true) ?? []);
+                        if (count($records) == 0 || (count($records) == 1 && $records[0] == "*")) {
+                            $records = $this->getAllRecordIds();
+                        }
+                        foreach ($records as $record) {
+                            $this->recalculate($cron["fields"], $cron["events"], $record, "calculate");
+                        }
+                        $crons[$index]["status"] = 2;
                         $this->setProjectSetting('cron', json_encode($crons));
                     }
                 }

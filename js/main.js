@@ -17,7 +17,7 @@
     let run = false;
     let totalBatches = -1;
     let clockInterval = -1;
-    const statusMap = { "-1": glo.em.tt("status_error"), "0": glo.em.tt("status_scheduled"), "1": glo.em.tt("status_complete") };
+    const statusMap = { "-1": glo.em.tt("status_error"), "0": glo.em.tt("status_scheduled"), "1": glo.em.tt("status_running"), "2": glo.em.tt("status_complete") };
     const $calcBtn = $("#recalc");
     const $eventsSelect = $("#events");
     const $fieldsSelect = $("#fields");
