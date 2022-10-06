@@ -65,6 +65,41 @@ class Recalculate extends AbstractExternalModule
     */
     public function run_cron($cronInfo)
     {
+        // Stash original PID, probably not needed, but docs recommend
+        $originalPid = $_GET['pid'];
+        $maxTime = $cronInfo["cron_max_run_time"];
+
+        // Loop over every pid using this EM
+        foreach ($this->getProjectsWithModuleEnabled() as $pid) {
+
+            // Act like we are in that project
+            $_GET['pid'] = $pid;
+            $time = gmdate('Y-m-d\TH:i:s.000\Z'); // ISO time in same format as JS
+            $expire = gmdate('Y-m-d\TH:i:s.000\Z', time() + $maxTime);
+            $crons = $this->getProjectSetting('cron');
+            $crons = empty($json) ? [] : json_decode($crons, true);
+            foreach ($crons as $index => $cron) {
+                if ($cron["status"] == 0) {
+
+                    // Mark the cron as error
+                    if ($cron["status"] == 0 && $cron["time"] > $expire) {
+                        $crons[$index]["status"] = -1;
+                        $this->setProjectSetting('cron', json_encode($crons));
+                    }
+                    // Run the cron
+                    elseif ($cron["time"] > $time) {
+                        // TODO
+                        $crons[$index]["status"] = 1;
+                        $this->setProjectSetting('cron', json_encode($crons));
+                    }
+                }
+            }
+        }
+
+        // Put the pid back the way it was before this cron job
+        // likely doesn't matter, but is good housekeeping practice
+        $_GET['pid'] = $originalPid;
+        return "The \"{$cronInfo['cron_name']}\" cron job completed successfully.";
     }
 
     /*
