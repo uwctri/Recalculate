@@ -56,12 +56,17 @@ class Recalculate extends AbstractExternalModule
         // Run core code
         $result = [];
         $action = $params["action"] ?? "api";
-        $config = $this->parse_field_event_record($params["fields"], $params["events"], $params["records"]);
-        if ($action == "cron") {
-            $result = $this->setup_cron($config, $params["time"], $params["batchSize"]);
-        } else { // API, Calc
-            $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
-            $result =  $this->recalculate($config, $action);
+
+        if ($action == "rmCron") {
+            $result = $this->remove_cron($params["ids"]);
+        } else {
+            $config = $this->parse_field_event_record($params["fields"], $params["events"], $params["records"]);
+            if ($action == "cron") {
+                $result = $this->setup_cron($config, $params["time"], $params["batchSize"]);
+            } else { // API, Calc
+                $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
+                $result =  $this->recalculate($config, $action);
+            }
         }
         return json_encode($result);
     }
@@ -159,6 +164,28 @@ class Recalculate extends AbstractExternalModule
         ];
     }
 
+
+    /*
+    Remove a a list of crons by id
+    */
+    private function remove_cron($idList)
+    {
+        $json = $this->getProjectSetting('cron');
+        $json = empty($json) ? [] : json_decode($json, true);
+        $removed = [];
+        foreach ($idList as $id) {
+            if ($json[$id]['status'] != 1) { // Don't remove if running
+                $json[$id]['id'] = $id;
+                $removed[] = $json[$id];
+                unset($json[$id]);
+            }
+        }
+        $this->setProjectSetting('cron', json_encode($json));
+        return [
+            "errors" =>  [],
+            "removed" => $removed
+        ];
+    }
 
     /*
     Re-pull the cron json, update a cron, and save. 
@@ -341,8 +368,11 @@ class Recalculate extends AbstractExternalModule
     {
         $json = $this->getProjectSetting('cron');
         $json = empty($json) ? [] : json_decode($json, true);
+        foreach ($json as $id => $cron) {
+            $json[$id]['id'] = $id;
+        }
         return [
-            "crons" => $json,
+            "crons" => array_values($json),
             "events" => REDCap::getEventNames(),
             "isClassic" => !REDCap::isLongitudinal(),
             "fields" => $this->getAllCalcFields(),

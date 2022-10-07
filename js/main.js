@@ -133,7 +133,7 @@
         }
     });
 
-    // Setup "Schedulaed Cron" table
+    // Setup "Scheduled Cron" table
     $cronTable.find('table').DataTable({
         data: glo.crons,
         pageLength: 40,
@@ -157,24 +157,75 @@
             {
                 title: glo.em.tt('cron_table_records'),
                 data: 'records',
-                render: (data, type, row, meta) => data.join(', ').slice(0, 50)
+                render: (data, type, row, meta) => data.join(', ').slice(0, 220)
             },
             {
                 title: glo.em.tt('cron_table_events'),
                 data: 'events',
-                render: (data, type, row, meta) => data.join(', ').slice(0, 50)
+                render: (data, type, row, meta) => data.join(', ').slice(0, 220)
             },
             {
                 title: glo.em.tt('cron_table_fields'),
                 data: 'fields',
-                render: (data, type, row, meta) => data.join(', ').slice(0, 50)
+                render: (data, type, row, meta) => data.join(', ').slice(0, 220)
             },
             {
                 title: glo.em.tt('cron_table_status'),
                 data: 'status',
                 render: (data, type, row, meta) => statusMap[data]
+            },
+            {
+                data: null,
+                className: 'dt-center',
+                orderable: false,
+                render: (data, type, row, meta) => row['status'] == 0 ? '<i class="row-remove fa fa-trash text-secondary"/>' : ""
+            },
+            {
+                data: 'id',
+                orderable: false,
+                visible: false
             }
         ]
+    });
+
+    // Setup Con Removal on the above table
+    $("body").on('click', '.row-remove', (icon) => {
+        $row = $cronTable.find('table').DataTable().row($(icon.currentTarget).parents('tr'));
+        const id = $row.data()['id'];
+        console.log($row.data())
+        $.ajax({
+            method: 'POST',
+            url: glo.router,
+            data: {
+                ids: [id],
+                action: 'rmCron',
+                redcap_csrf_token: glo.csrf,
+                projectid: pid
+            },
+
+            // Only occurs on network or technical issue
+            error: (jqXHR, textStatus, errorThrown) => {
+                console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
+                show500(true);
+            },
+
+            // Response returned from server
+            success: (data) => {
+                console.log(data);
+
+                // 500 error
+                if ((typeof data == "string" && data.length === 0) || data.errors.length) {
+                    show500(true);
+                    return;
+                }
+
+                $row.remove().draw();
+                Toast.fire({
+                    icon: 'success',
+                    title: glo.em.tt('msg_cron_rm')
+                });
+            }
+        });
     });
 
     // Toggle loading ring
@@ -401,7 +452,7 @@
                         return;
                     }
 
-                    let tr = $cronTable.find('table').DataTable().row.add({
+                    $cronTable.find('table').DataTable().row.add({
                         ...settings,
                         time,
                         status: 0
