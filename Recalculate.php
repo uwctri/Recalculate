@@ -180,17 +180,21 @@ class Recalculate extends AbstractExternalModule
     {
         $isClassic = !REDCap::isLongitudinal();
         $eventNames = REDCap::getEventNames();
+        function decode($input)
+        {
+            return array_map('trim', is_string($input) ? (json_decode($input, true) ?? []) : $input);
+        }
         return [
             "field" => [
-                "post" => array_map('trim', is_string($fields) ? (json_decode($fields, true) ?? []) : $fields),
+                "post" => decode($fields),
                 "valid" => array_keys($this->getAllCalcFields()),
             ],
             "event" => [
-                "post" => array_map('trim', is_string($events) ? (json_decode($events, true) ?? []) : $events),
+                "post" => decode($events),
                 "valid" => $isClassic ? ['all'] : array_keys($eventNames),
             ],
             "record" => [
-                "post" => array_map('trim', is_string($records) ? (json_decode($records, true) ?? []) : $records),
+                "post" => decode($records),
                 "valid" => $this->getAllRecordIds(),
             ]
         ];
