@@ -231,7 +231,7 @@
         Swal.fire({
             icon: 'error',
             title: glo.em.tt('error_500'),
-            text: glo.em.tt('error_500_text')
+            text: errorText
         });
     }
 
@@ -288,8 +288,7 @@
 
         const fields = allFields ? ['*'] : $fieldsSelect.val();
         const events = (allEvents || !isLongitudinal) ? ['*'] : $eventsSelect.val();
-        let records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
-        records = records[0] == '*' && batchSize > 0 ? glo.records : records;
+        const records = $recordsText.val().replaceAll(' ', '').split(',').filter(e => e);
 
         // Color missing fields (validation)
         $fieldsSelect.addClass(fields.length ? '' : 'is-invalid');
@@ -402,7 +401,7 @@
                         return;
                     }
 
-                    $cronTable.find('table').DataTable().row.add({
+                    let tr = $cronTable.find('table').DataTable().row.add({
                         ...settings,
                         time,
                         status: 0
@@ -422,12 +421,13 @@
         // Validation
         const settings = validate();
         if (!settings) return;
-        const { records, fields, events, batchSize } = settings;
+        let { records, fields, events, batchSize } = settings;
 
         // Send request
         toggleLoading();
         clearLog();
         run = true;
+        records = records[0] == '*' && batchSize > 0 ? glo.records : records;
         glo.recordBatches = batchArray(records, batchSize).reverse();
         totalBatches = glo.recordBatches.length;
         $table.collapse('hide');

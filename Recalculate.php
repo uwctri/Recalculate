@@ -13,6 +13,7 @@ class Recalculate extends AbstractExternalModule
 {
     private $oneMonth = (60 * 60 * 24 * 30);
     private $maxCrons = 120;
+    private $timeFormat = 'Y-m-d\TH:i:s.000\Z';
 
     /*
     Redcap Hook. Allow nav to the index page only if user rights are met
@@ -53,12 +54,14 @@ class Recalculate extends AbstractExternalModule
         }
 
         // Run core code
-        $action = $params["action"] ?? "api";
         $result = [];
+        $action = $params["action"] ?? "api";
+        $config = $this->parse_field_event_record($params["fields"], $params["events"], $params["records"]);
         if ($action == "cron") {
-            $result = $this->setup_cron($params["fields"], $params["events"], $params["records"], $params["time"]);
-        } else {
-            $result =  $this->recalculate($params["fields"], $params["events"], $params["records"], $action);
+            $result = $this->setup_cron($config, $params["time"], $params["batchSize"]);
+        } else { // API, Calc
+            $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
+            $result =  $this->recalculate($config, $action);
         }
         return json_encode($result);
     }
@@ -80,53 +83,52 @@ class Recalculate extends AbstractExternalModule
             $_GET['pid'] = $pid;
             $Proj = new Project($pid);
             define('PROJECT_ID', $pid);
-            $time = gmdate('Y-m-d\TH:i:s.000\Z'); // ISO time in same format as JS
-            $expire = gmdate('Y-m-d\TH:i:s.000\Z', time() - $maxTime);
-            $veryOld = gmdate('Y-m-d\TH:i:s.000\Z', time() - $this->oneMonth);
+
+            // Gather a bunch of info
+            $time = gmdate($this->timeFormat); // ISO time in same format as JS
+            $expire = gmdate($this->timeFormat, time() - $maxTime);
+            $veryOld = gmdate($this->timeFormat, time() - $this->oneMonth);
             $crons = $this->getProjectSetting('cron');
             $crons = empty($crons) ? [] : json_decode($crons, true);
             $large = count($crons) > $this->maxCrons;
-            $save = false;
-            foreach ($crons as $index => $cron) {
+
+            // Loop over all configed crons
+            foreach ($crons as $id => $cron) {
                 if (in_array($cron["status"], [0, 1])) { // Running or Scheduled
 
                     // Mark the cron as error
                     if ($expire > $cron["time"]) {
-                        $crons[$index]["status"] = -1;
-                        $this->setProjectSetting('cron', json_encode($crons));
+                        $cron["status"] = -1;
+                        $this->update_cron($id, $cron);
                     }
                     // Run the cron
                     elseif ($time > $cron["time"] && $cron["status"] == 0) {
 
                         // Set to running
-                        $crons[$index]["status"] = 1;
-                        $this->setProjectSetting('cron', json_encode($crons));
+                        $cron["status"] = 1;
+                        $this->update_cron($id, $cron);
                         $this->projectLog("cron", $cron["fields"], $cron["events"], $cron["records"]);
 
                         // Perform recalcs
-                        $records = array_map('trim', json_decode($cron["records"], true) ?? []);
-                        if (count($records) == 0 || (count($records) == 1 && $records[0] == "*")) {
-                            $records = $this->getAllRecordIds();
-                        }
-                        foreach ($records as $record) {
-                            $this->recalculate($cron["fields"], $cron["events"], "[$record]", "cron");
+                        $size = $cron["size"] > 0 ? $cron["size"] : 1000;
+                        $config = $this->parse_field_event_record($cron["fields"], $cron["events"], $cron["records"]);
+                        $records = ((count($cron["records"]) == 0) || (count($cron["records"]) == 1 && $cron["records"][0] == "*")) ? $config["record"]["valid"] : $cron["records"];
+                        $batchedRecords = array_chunk($records, $size);
+                        foreach ($batchedRecords as $set) {
+                            $config['record']['post'] = $set;
+                            $this->recalculate($config, "cron");
                         }
 
                         // Done
-                        $crons[$index]["status"] = 2;
-                        $crons[$index]["completion"] = 2;
-                        $this->setProjectSetting('cron', json_encode($crons));
+                        $cron["status"] = 2;
+                        $cron["completed"] = gmdate($this->timeFormat);
+                        $this->update_cron($id, $cron);
                         return; // Only run one at a time
                     }
                 } elseif ($large && ($veryOld > $cron["time"])) {
                     // Remove old entry
-                    unset($crons[$index]);
-                    $save = true;
+                    unset($crons[$id]);
                 }
-            }
-            // Perform a save to be safe, maybe we only removed old entries
-            if ($save) {
-                $this->setProjectSetting('cron', json_encode($crons));
             }
         }
 
@@ -139,15 +141,16 @@ class Recalculate extends AbstractExternalModule
     /*
     Setup a new user defined cron
     */
-    private function setup_cron($fields, $events, $records, $time)
+    private function setup_cron($config, $time, $size)
     {
         $json = $this->getProjectSetting('cron');
         $json = empty($json) ? [] : json_decode($json, true);
         $json[] = [
-            "fields" => $fields,
-            "events" => $events,
-            "records" => $records,
+            "fields" => $config['field']['post'],
+            "events" => $config['event']['post'],
+            "records" => $config['record']['post'],
             "time" => $time,
+            "size" => intval($size),
             "status" => 0
         ];
         $this->setProjectSetting('cron', json_encode($json));
@@ -156,37 +159,51 @@ class Recalculate extends AbstractExternalModule
         ];
     }
 
+
+    /*
+    Re-pull the cron json, update a cron, and save. 
+    Avoids any overlapping cron issues.
+    */
+    private function update_cron($id, $cron)
+    {
+        $json = $this->getProjectSetting('cron');
+        $json = empty($json) ? [] : json_decode($json, true);
+        $json[$id] = $cron;
+        $this->setProjectSetting('cron', json_encode($json));
+    }
+
+    /*
+    Formats Fields Events and Records from Ajax into
+    an array of ready-to-use values
+    */
+    private function parse_field_event_record($fields, $events, $records)
+    {
+        $isClassic = !REDCap::isLongitudinal();
+        $eventNames = REDCap::getEventNames();
+        return [
+            "field" => [
+                "post" => array_map('trim', is_string($fields) ? (json_decode($fields, true) ?? []) : $fields),
+                "valid" => array_keys($this->getAllCalcFields()),
+            ],
+            "event" => [
+                "post" => array_map('trim', is_string($events) ? (json_decode($events, true) ?? []) : $events),
+                "valid" => $isClassic ? ['all'] : array_keys($eventNames),
+            ],
+            "record" => [
+                "post" => array_map('trim', is_string($records) ? (json_decode($records, true) ?? []) : $records),
+                "valid" => $this->getAllRecordIds(),
+            ]
+        ];
+    }
+
     /*
     Performs core functionality. Invoked via ajax/api.
     Fire the native redcap calculated field routines.
     */
-    private function recalculate($fields, $events, $records, $action)
+    private function recalculate($config, $action)
     {
         $errors = [];
-        $eventNames = REDCap::getEventNames();
-        $isClassic = !REDCap::isLongitudinal();
         $this->checkMemory();
-
-        // Load everything into an array for easy looping
-        $config = [
-            "field" => [
-                "post" => array_map('trim', json_decode($fields, true) ?? []),
-                "valid" => array_keys($this->getAllCalcFields()),
-            ],
-            "event" => [
-                "post" => array_map('trim', json_decode($events, true) ?? []),
-                "valid" => $isClassic ? ['all'] : array_keys($eventNames),
-            ],
-            "record" => [
-                "post" => array_map('trim', json_decode($records, true) ?? []),
-                "valid" => $this->getAllRecordIds(),
-            ]
-        ];
-
-        // Log the event (cron currently logs itself)
-        if ($action != "cron") {
-            $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
-        }
 
         // Validate submission
         foreach ($config as $name => $c) {
@@ -286,11 +303,6 @@ class Recalculate extends AbstractExternalModule
     private function projectLog($action, $fieldList, $eventList, $recordList)
     {
         $sql = null;
-        if ($action == "cron") { // wastefull
-            $fieldList = array_map('trim', json_decode($fieldList, true) ?? ['*']);
-            $eventList = array_map('trim', json_decode($eventList, true) ?? ['*']);
-            $recordList = array_map('trim', json_decode($recordList, true) ?? ['*']);
-        }
         $record = count($recordList) == 1 && $recordList[0] != "*" ? $recordList[0] : NULL;
         $event = count($eventList) == 1 && $eventList[0] != "*" ? $eventList[0] : NULL;
         $config = [
@@ -324,7 +336,7 @@ class Recalculate extends AbstractExternalModule
     public function loadSettings()
     {
         $json = $this->getProjectSetting('cron');
-        $json = empty($json) ? [] : array_values(json_decode($json, true));
+        $json = empty($json) ? [] : json_decode($json, true);
         return [
             "crons" => $json,
             "events" => REDCap::getEventNames(),
