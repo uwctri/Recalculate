@@ -133,11 +133,44 @@
         }
     });
 
+    // Remove Cron Function
+    const cleanup = (idList, finishFunc) => {
+        $.ajax({
+            method: 'POST',
+            url: glo.router,
+            data: {
+                ids: idList,
+                action: 'rmCron',
+                redcap_csrf_token: glo.csrf,
+                projectid: pid
+            },
+
+            // Only occurs on network or technical issue
+            error: (jqXHR, textStatus, errorThrown) => {
+                console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
+                show500(true);
+            },
+
+            // Response returned from server
+            success: (data) => {
+                console.log(data);
+
+                // 500 error
+                if ((typeof data == "string" && data.length === 0) || data.errors.length) {
+                    show500(true);
+                    return;
+                }
+
+                finishFunc();
+            }
+        });
+    }
+
     // Setup "Scheduled Cron" table
     $cronTable.find('table').DataTable({
         data: glo.crons,
         pageLength: 40,
-        dom: `<'row'<'col-sm-10'f>>
+        dom: `<'row'<'col-sm-8'f><'col-sm-4 cleanupCron'>>
               <'row'<'col-sm-12'tr>>"
               <'row'<'col-sm-12 col-md-6 small'i><'col-sm-12 col-md-6'p>>`,
         language: {
@@ -187,45 +220,40 @@
             }
         ]
     });
+    $(".cleanupCron").html(`<a><i class='fas fa-broom'></i>${glo.em.tt('button_clean')}</a>`);
+    $(".cleanupCron a").on('click', () => {
+        let idList = [];
+        let nodes = [];
+        const table = $cronTable.find('table').DataTable();
+        table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+            let data = this.data();
+            if ([-1, 2].includes(data['status'])) {
+                idList.push(data['id']);
+                nodes.push(this.node());
+            }
+        });
+        cleanup(idList, () => {
+            nodes.forEach((node) => {
+                table.row(node).remove().draw();
+            });
+            Toast.fire({
+                icon: 'success',
+                title: glo.em.tt('msg_cleanup')
+            });
+        })
+    });
 
     // Setup Con Removal on the above table
     $("body").on('click', '.row-remove', (icon) => {
         $row = $cronTable.find('table').DataTable().row($(icon.currentTarget).parents('tr'));
         const id = $row.data()['id'];
-        console.log($row.data())
-        $.ajax({
-            method: 'POST',
-            url: glo.router,
-            data: {
-                ids: [id],
-                action: 'rmCron',
-                redcap_csrf_token: glo.csrf,
-                projectid: pid
-            },
-
-            // Only occurs on network or technical issue
-            error: (jqXHR, textStatus, errorThrown) => {
-                console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
-                show500(true);
-            },
-
-            // Response returned from server
-            success: (data) => {
-                console.log(data);
-
-                // 500 error
-                if ((typeof data == "string" && data.length === 0) || data.errors.length) {
-                    show500(true);
-                    return;
-                }
-
-                $row.remove().draw();
-                Toast.fire({
-                    icon: 'success',
-                    title: glo.em.tt('msg_cron_rm')
-                });
-            }
-        });
+        cleanup([id], () => {
+            $row.remove().draw();
+            Toast.fire({
+                icon: 'success',
+                title: glo.em.tt('msg_cron_rm')
+            });
+        })
     });
 
     // Toggle loading ring
@@ -455,7 +483,8 @@
                     $cronTable.find('table').DataTable().row.add({
                         ...settings,
                         time,
-                        status: 0
+                        status: 0,
+                        id: 'new'
                     }).draw();
                     Toast.fire({
                         icon: 'success',

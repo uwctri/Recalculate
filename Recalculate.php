@@ -174,7 +174,7 @@ class Recalculate extends AbstractExternalModule
         $json = empty($json) ? [] : json_decode($json, true);
         $removed = [];
         foreach ($idList as $id) {
-            if ($json[$id]['status'] != 1) { // Don't remove if running
+            if (!empty($json[$id]) && $json[$id]['status'] != 1) { // Don't remove if running
                 $json[$id]['id'] = $id;
                 $removed[] = $json[$id];
                 unset($json[$id]);

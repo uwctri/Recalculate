@@ -100,3 +100,14 @@
 .custom-control-label {
     color: #6d6d6d;
 }
+
+.cleanupCron {
+    color: #dee2e6;
+    text-align: right;
+    text-decoration: underline;
+    padding-top: 0.25em;
+}
+
+.cleanupCron a {
+    cursor: pointer;
+}
