@@ -416,7 +416,8 @@
     $(".container [data-action]").on('click', (event) => {
 
         // Check if we are already running, need cancel, or just want to view old table / open modal
-        const action = $(event.currentTarget).data("action");
+        const $target = $(event.currentTarget);
+        const action = $target.data("action");
 
         // Cancel Current Action
         if (action == "cancel") {
@@ -452,6 +453,8 @@
             if (!settings) return;
             let time = new Date($("#cronTime").val());
             time = time.toJSON();
+            $target.prop("disabled", true);
+            setTimeout(() => $target.prop("disabled", false), 2000);
 
             $.ajax({
                 method: 'POST',
