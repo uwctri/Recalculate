@@ -6,11 +6,13 @@ This module allows you to calculate and save values for calc fields in a project
 
 Features:
 
-* Generate previews of incorrect calculations before executing them.
-* Execute a recalcuation on a single issue in your preview
+* Run recalculations for specifc records, events, fields or any cobination
+* Generate previews of incorrect calculations before executing them
+* Execute a recalcuation on a single issue in your preview table
 * The most recent preview of issues you genertate is cached so you can quickly load it later
 * Verbose logging
 * An API is exposed (see below) for you to easily trigger recalcs via a script or other integration
+* Schedule recalculations to occur at a later time
 
 ## Installing
 
