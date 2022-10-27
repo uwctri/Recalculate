@@ -136,14 +136,7 @@
     // Remove Cron Function
     const cleanup = (idList, finishFunc) => {
         $.ajax({
-            method: 'POST',
-            url: glo.router,
-            data: {
-                ids: idList,
-                action: 'rmCron',
-                redcap_csrf_token: glo.csrf,
-                projectid: pid
-            },
+            ...makePostSettings('rmCron', { ids: idList }),
 
             // Only occurs on network or technical issue
             error: (jqXHR, textStatus, errorThrown) => {
@@ -218,8 +211,23 @@
                 orderable: false,
                 visible: false
             }
-        ]
+        ],
+        initComplete: () => {
+            // Refresh data every 5 mins
+            setInterval(() => {
+                $.ajax({
+                    ...makePostSettings('settings'),
+                    success: (crons) => {
+                        console.log("Refreshed scheduled cron data");
+                        $cronTable.find('table').DataTable().clear();
+                        $cronTable.find('table').DataTable().rows.add(crons).draw();
+                    }
+                })
+            }, 60 * 5 * 1000)
+        }
     });
+
+    // Cleanup button on scheduled cron table
     $(".cleanupCron").html(`<a><i class='fas fa-broom'></i>${glo.em.tt('button_clean')}</a>`);
     $(".cleanupCron a").on('click', () => {
         let idList = [];
@@ -255,6 +263,21 @@
             });
         })
     });
+
+    // Ajax settings Util function
+    const makePostSettings = (action, data = {}) => {
+        return {
+            method: 'POST',
+            url: glo.router,
+            data: {
+                action: action,
+                redcap_csrf_token: glo.csrf,
+                projectid: pid,
+                ...data
+            }
+        }
+
+    }
 
     // Toggle loading ring
     const toggleLoading = () => {
@@ -457,15 +480,7 @@
             setTimeout(() => $target.prop("disabled", false), 2000);
 
             $.ajax({
-                method: 'POST',
-                url: glo.router,
-                data: {
-                    ...settings,
-                    time,
-                    action: 'cron',
-                    redcap_csrf_token: glo.csrf,
-                    projectid: pid
-                },
+                ...makePostSettings('cron', { ...settings, time }),
 
                 // Only occurs on network or technical issue
                 error: (jqXHR, textStatus, errorThrown) => {
@@ -565,16 +580,11 @@
         // Update the Detials area
         updateLog(batchNumber, records);
         $.ajax({
-            method: 'POST',
-            url: glo.router,
-            data: {
-                action: preview ? 'preview' : 'calculate',
+            ...makePostSettings(preview ? 'preview' : 'calculate', {
                 records: JSON.stringify(records),
                 events: events,
                 fields: fields,
-                redcap_csrf_token: glo.csrf,
-                projectid: pid
-            },
+            }),
 
             // Only occurs on network or technical issue
             error: (jqXHR, textStatus, errorThrown) => {

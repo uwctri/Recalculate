@@ -13,6 +13,7 @@ Features:
 * Verbose logging
 * An API is exposed (see below) for you to easily trigger recalcs via a script or other integration
 * Schedule recalculations to occur at a later time
+* Setup scheduled reclaculations to repeat as often as you'd like
 
 ## Installing
 

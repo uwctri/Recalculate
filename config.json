@@ -64,7 +64,7 @@
             "cron_description": "Check for user configured recalculate crons",
             "method": "run_cron",
             "cron_frequency": 60,
-            "cron_max_run_time": 43200
+            "cron_max_run_time": 86400
         }
     ],
     "compatibility": {

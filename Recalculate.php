@@ -57,7 +57,9 @@ class Recalculate extends AbstractExternalModule
         $result = [];
         $action = $params["action"] ?? "api";
 
-        if ($action == "rmCron") {
+        if ($action == "settings") {
+            $result = $this->loadSettings()["crons"];
+        } elseif ($action == "rmCron") {
             $result = $this->remove_cron($params["ids"]);
         } else {
             $config = $this->parse_field_event_record($params["fields"], $params["events"], $params["records"]);
@@ -122,6 +124,11 @@ class Recalculate extends AbstractExternalModule
                         foreach ($batchedRecords as $set) {
                             $config['record']['post'] = $set;
                             $this->recalculate($config, "cron");
+                            $cron["log"] = [
+                                "time" => gmdate($this->timeFormat),
+                                "records" => array_slice($set, 0, 5)
+                            ];
+                            $this->update_cron($id, $cron);
                         }
 
                         // Done
