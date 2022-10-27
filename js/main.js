@@ -213,7 +213,7 @@
             }
         ],
         initComplete: () => {
-            // Refresh data every 5 mins
+            // Refresh data every min
             setInterval(() => {
                 $.ajax({
                     ...makePostSettings('settings'),
@@ -223,7 +223,7 @@
                         $cronTable.find('table').DataTable().rows.add(crons).draw();
                     }
                 })
-            }, 60 * 5 * 1000)
+            }, 60 * 1000)
         }
     });
 
