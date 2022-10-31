@@ -15,6 +15,11 @@ Features:
 * Schedule recalculations to occur at a later time
 * Setup scheduled reclaculations to repeat as often as you'd like
 
+FYIs:
+
+* Removing a repating scheduled cron will remove all future runs too
+* A repating scheduled cron that fails via error (usually due to running for over 24 hours) will not repeat
+
 ## Installing
 
 You can install the module from the REDCap EM repo or drop it directly in your modules folder (i.e. `redcap/modules/recalculate_v1.0.0`).

@@ -481,11 +481,12 @@
                 $cronTime.addClass("is-invalid");
                 return;
             }
+            const repeat = $("#cronRepeat").val();
             $target.prop("disabled", true);
             setTimeout(() => $target.prop("disabled", false), 2000);
 
             $.ajax({
-                ...makePostSettings('cron', { ...settings, time }),
+                ...makePostSettings('cron', { ...settings, time, repeat }),
 
                 // Only occurs on network or technical issue
                 error: (jqXHR, textStatus, errorThrown) => {

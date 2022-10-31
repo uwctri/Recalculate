@@ -111,3 +111,7 @@
 .cleanupCron a {
     cursor: pointer;
 }
+
+#cronRepeat {
+    width: fit-content;
+}

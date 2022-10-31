@@ -155,10 +155,15 @@ $module->tt_transferToJavascriptModuleObject();
     <!-- Scheduled To Run Button -->
     <div class="row p-2 collapse mb-4" id="schBtnRow">
         <label for="records" class="col-3 col-form-label font-weight-bold"><?= $module->tt('label_time'); ?></label>
-        <div class="col-5">
-            <input id="cronTime" placeholder="<?= $module->tt('placeholder_date'); ?>" type="text" class="form-control">
+        <div class="col-6 d-flex">
+            <input id="cronTime" placeholder="<?= $module->tt('placeholder_date'); ?>" type="text" class="form-control mr-1">
+            <select id="cronRepeat" class="custom-select ml-1">
+                <option value=""><?= $module->tt('cron_once'); ?></option>
+                <option value="1"><?= $module->tt('cron_daily'); ?></option>
+                <option value="7"><?= $module->tt('cron_weekly'); ?></option>
+            </select>
         </div>
-        <div class="col-4">
+        <div class="col-3">
             <button type="button" data-action="makeCron" class="btn btn-primary float-right">
                 <span class="btnText"> <?= $module->tt('button_cron'); ?> </span>
             </button>

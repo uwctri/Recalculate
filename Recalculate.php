@@ -64,7 +64,7 @@ class Recalculate extends AbstractExternalModule
         } else {
             $config = $this->parse_field_event_record($params["fields"], $params["events"], $params["records"]);
             if ($action == "cron") {
-                $result = $this->setup_cron($config, $params["time"], $params["batchSize"]);
+                $result = $this->setup_cron($config, $params["batchSize"], $params["time"], $params["repeat"]);
             } else { // API, Calc
                 $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
                 $result =  $this->recalculate($config, $action);
@@ -131,6 +131,16 @@ class Recalculate extends AbstractExternalModule
                             $this->update_cron($id, $cron);
                         }
 
+                        // Check for repeat config
+                        if ($cron["repeat"]) {
+                            $newTime = gmdate($this->timeFormat, strtotime($cron["time"] . ' +' . $cron["repeat"] . ' day'));
+                            $this->setup_cron([
+                                "field" => ["post" => $cron["fields"]],
+                                "event" => ["post" => $cron["events"]],
+                                "record" => ["post" => $cron["records"]]
+                            ], $cron["size"], $newTime, $cron["repeat"]);
+                        }
+
                         // Done
                         $cron["status"] = 2;
                         $cron["completed"] = gmdate($this->timeFormat);
@@ -153,7 +163,7 @@ class Recalculate extends AbstractExternalModule
     /*
     Setup a new user defined cron
     */
-    private function setup_cron($config, $time, $size)
+    private function setup_cron($config, $size, $time, $repeat)
     {
         $json = $this->getProjectSetting('cron');
         $json = empty($json) ? [] : json_decode($json, true);
@@ -162,6 +172,7 @@ class Recalculate extends AbstractExternalModule
             "events" => $config['event']['post'],
             "records" => $config['record']['post'],
             "time" => $time,
+            "repeat" => $repeat,
             "size" => intval($size),
             "status" => 0
         ];
@@ -171,7 +182,6 @@ class Recalculate extends AbstractExternalModule
             "id" => end($this->loadCrons())["id"]
         ];
     }
-
 
     /*
     Remove a a list of crons by id
