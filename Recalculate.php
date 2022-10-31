@@ -58,7 +58,7 @@ class Recalculate extends AbstractExternalModule
         $action = $params["action"] ?? "api";
 
         if ($action == "settings") {
-            $result = $this->loadSettings()["crons"];
+            $result = $this->loadCrons();
         } elseif ($action == "rmCron") {
             $result = $this->remove_cron($params["ids"]);
         } else {
@@ -167,7 +167,8 @@ class Recalculate extends AbstractExternalModule
         ];
         $this->setProjectSetting('cron', json_encode($json));
         return [
-            "errors" =>  []
+            "errors" =>  [],
+            "id" => end($this->loadCrons())["id"]
         ];
     }
 
@@ -373,13 +374,8 @@ class Recalculate extends AbstractExternalModule
     */
     public function loadSettings()
     {
-        $json = $this->getProjectSetting('cron');
-        $json = empty($json) ? [] : json_decode($json, true);
-        foreach ($json as $id => $cron) {
-            $json[$id]['id'] = $id;
-        }
         return [
-            "crons" => array_values($json),
+            "crons" => $this->loadCrons(),
             "events" => REDCap::getEventNames(),
             "isClassic" => !REDCap::isLongitudinal(),
             "fields" => $this->getAllCalcFields(),
@@ -388,6 +384,19 @@ class Recalculate extends AbstractExternalModule
             "router" => $this->getUrl('router.php'),
             "em" => $this->getJavascriptModuleObjectName()
         ];
+    }
+
+    /*
+    Load all Scheduled Cron info
+    */
+    private function loadCrons()
+    {
+        $json = $this->getProjectSetting('cron');
+        $json = empty($json) ? [] : json_decode($json, true);
+        foreach ($json as $id => $cron) {
+            $json[$id]['id'] = $id;
+        }
+        return array_values($json);
     }
 
     /*

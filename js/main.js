@@ -473,9 +473,14 @@
         // Write the cron back to settings
         if (action == "makeCron") {
             const settings = validate();
+            $cronTime.removeClass("is-invalid");
             if (!settings) return;
-            let time = new Date($("#cronTime").val());
+            let time = new Date($cronTime.val());
             time = time.toJSON();
+            if (time == null) {
+                $cronTime.addClass("is-invalid");
+                return;
+            }
             $target.prop("disabled", true);
             setTimeout(() => $target.prop("disabled", false), 2000);
 
@@ -502,7 +507,7 @@
                         ...settings,
                         time,
                         status: 0,
-                        id: 'new'
+                        id: data.id
                     }).draw();
                     Toast.fire({
                         icon: 'success',
@@ -549,6 +554,7 @@
     $eventsSelect.on('change', () => $eventsSelect.removeClass('is-invalid'));
     $fieldsSelect.on('change', () => $fieldsSelect.removeClass('is-invalid'));
     $bSize.on('change', () => isInteger($bSize.val(), true) ? $bSize.removeClass('is-invalid') : $bSize.val(""));
+    $cronTime.on('change', () => $cronTime.removeClass('is-invalid'));
 
     // Advanced Button styling
     $bRow.on('show.bs.collapse', () => { $('#advRow i').addClass('rotate') });
