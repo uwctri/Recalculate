@@ -114,7 +114,7 @@ class Recalculate extends AbstractExternalModule
                         // Set to running
                         $cron["status"] = 1;
                         $this->update_cron($id, $cron);
-                        $this->projectLog("cron", $cron["fields"], $cron["events"], $cron["records"]);
+                        $this->projectLog("cron", $cron["fields"], $cron["events"], $cron["records"], $pid);
 
                         // Perform recalcs
                         $size = $cron["size"] > 0 ? $cron["size"] : 1000;
@@ -349,7 +349,7 @@ class Recalculate extends AbstractExternalModule
     /*
     Log an action for the EM
     */
-    private function projectLog($action, $fieldList, $eventList, $recordList)
+    private function projectLog($action, $fieldList, $eventList, $recordList, $pid = null)
     {
         $sql = null;
         $record = count($recordList) == 1 && $recordList[0] != "*" ? $recordList[0] : NULL;
@@ -376,7 +376,7 @@ class Recalculate extends AbstractExternalModule
         $events = implode(', ', $eventList);
         $records = implode(', ', $recordList);
         $changes = $config[$action]["changes"] . "\nFields = $fields\nEvents = $events\nRecords = $records";
-        REDCap::logEvent($config[$action]["blurb"], $changes, $sql, $record, $event);
+        REDCap::logEvent($config[$action]["blurb"], $changes, $sql, $record, $event, $pid);
     }
 
     /*
