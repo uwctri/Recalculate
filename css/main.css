@@ -108,7 +108,8 @@
     padding-top: 0.25em;
 }
 
-.cleanupCron a {
+.cleanupCron a,
+.row-remove {
     cursor: pointer;
 }
 
