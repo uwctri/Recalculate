@@ -1,4 +1,6 @@
 (() => {
+    const module = ExternalModules.UWMadison.Recalculate;
+
     // Pop-up config
     const Toast = Swal.mixin({
         toast: true,
@@ -17,7 +19,7 @@
     let run = false;
     let totalBatches = -1;
     let clockInterval = -1;
-    const statusMap = { "-1": glo.em.tt("status_error"), "0": glo.em.tt("status_scheduled"), "1": glo.em.tt("status_running"), "2": glo.em.tt("status_complete") };
+    const statusMap = { "-1": module.tt("status_error"), "0": module.tt("status_scheduled"), "1": module.tt("status_running"), "2": module.tt("status_complete") };
     const $calcBtn = $("#recalc");
     const $eventsSelect = $("#events");
     const $fieldsSelect = $("#fields");
@@ -57,32 +59,32 @@
               <'row'<'col-sm-12'tr>>"
               <'row'<'col-sm-12 col-md-6 small'i><'col-sm-12 col-md-6'p>>`,
         language: {
-            emptyTable: glo.em.tt('table_empty'),
-            zeroRecords: glo.em.tt('table_empty')
+            emptyTable: module.tt('table_empty'),
+            zeroRecords: module.tt('table_empty')
         },
         columns: [
             {
-                title: glo.em.tt('table_record'),
+                title: module.tt('table_record'),
                 data: 'record',
                 render: (data, type, row, meta) => data.slice(1)
             },
             {
-                title: glo.em.tt('table_event'),
+                title: module.tt('table_event'),
                 data: 'event',
-                render: (data, type, row, meta) => glo.events[data] || `[${glo.em.tt('table_unk_event', { event: data })}]`,
-                visible: !glo.isClassic
+                render: (data, type, row, meta) => module.config.events[data] || `[${module.tt('table_unk_event', { event: data })}]`,
+                visible: !module.config.isClassic
             },
             {
-                title: glo.em.tt('table_field'),
+                title: module.tt('table_field'),
                 data: 'field'
             },
             {
-                title: glo.em.tt('table_current'),
+                title: module.tt('table_current'),
                 data: 'current',
-                render: (data, type, row, meta) => row['censor'] ? `[${glo.em.tt('table_no_rights')}]` : data
+                render: (data, type, row, meta) => row['censor'] ? `[${module.tt('table_no_rights')}]` : data
             },
             {
-                title: glo.em.tt('table_calc'),
+                title: module.tt('table_calc'),
                 data: 'calc'
             }
         ]
@@ -94,14 +96,14 @@
         $t.popover('dispose');
         let msg = "";
         if ($showEqCalcs.is(":checked")) {
-            msg = glo.em.tt('select_table_show');
+            msg = module.tt('select_table_show');
             $.fn.dataTable.ext.search.push(
                 (settings, data, dataIndex, row) => {
                     return !row['c'];
                 }
             )
         } else {
-            msg = glo.em.tt('select_table_hide');
+            msg = module.tt('select_table_hide');
             $.fn.dataTable.ext.search.pop();
         }
         $t.popover({
@@ -120,7 +122,7 @@
             toggleLoading();
             clearLog();
             run = true;
-            glo.recordBatches = [];
+            module.config.recordBatches = [];
             totalBatches = 1;
             startLogClock();
             const data = $table.find('table').DataTable().row(options.$trigger).data();
@@ -129,7 +131,7 @@
             sendRequest([data.record.slice(1)], event, field, false, 0, 1, 0);
         },
         items: {
-            "run": { name: glo.em.tt("right_run"), icon: "fas fa-play text-primary" },
+            "run": { name: module.tt("right_run"), icon: "fas fa-play text-primary" },
         }
     });
 
@@ -160,45 +162,58 @@
     }
 
     // Setup "Scheduled Cron" table
+    const today = new Date();
     $cronTable.find('table').DataTable({
-        data: glo.crons,
+        data: module.config.crons,
         pageLength: 40,
         dom: `<'row'<'col-sm-8'f><'col-sm-4 cleanupCron'>>
               <'row'<'col-sm-12'tr>>"
               <'row'<'col-sm-12 col-md-6 small'i><'col-sm-12 col-md-6'p>>`,
         language: {
-            emptyTable: glo.em.tt('cron_table_empty'),
-            zeroRecords: glo.em.tt('cron_table_empty')
+            emptyTable: module.tt('cron_table_empty'),
+            zeroRecords: module.tt('cron_table_empty')
         },
         columns: [
             {
-                title: glo.em.tt('cron_table_time'),
+                title: module.tt('cron_table_time'),
                 data: 'time',
                 render: (data, type, row, meta) => {
                     if (type != 'display') return data;
                     data = new Date(data);
-                    return data.toLocaleString().replace(',', '').replace(':00 ', '').toLowerCase();
+                    data = data.toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "numeric"
+                    });
+                    return data.replaceAll(' ', '').replace(',', ' ').toLowerCase();
+
                 },
             },
             {
-                title: glo.em.tt('cron_table_records'),
+                title: module.tt('cron_table_records'),
                 data: 'records',
                 render: (data, type, row, meta) => data.join(', ').slice(0, 220)
             },
             {
-                title: glo.em.tt('cron_table_events'),
+                title: module.tt('cron_table_events'),
                 data: 'events',
                 render: (data, type, row, meta) => data.join(', ').slice(0, 220)
             },
             {
-                title: glo.em.tt('cron_table_fields'),
+                title: module.tt('cron_table_fields'),
                 data: 'fields',
                 render: (data, type, row, meta) => data.join(', ').slice(0, 220)
             },
             {
-                title: glo.em.tt('cron_table_status'),
+                title: module.tt('cron_table_status'),
                 data: 'status',
-                render: (data, type, row, meta) => statusMap[data]
+                render: (data, type, row, meta) => {
+                    let result = statusMap[data];
+                    result += (row.repeat && data == "0") ? ' <i class="fa fa-repeat text-secondary"></i>' : "";
+                    return result;
+                }
             },
             {
                 data: null,
@@ -228,7 +243,7 @@
     });
 
     // Cleanup button on scheduled cron table
-    $(".cleanupCron").html(`<a><i class='fas fa-broom'></i>${glo.em.tt('button_clean')}</a>`);
+    $(".cleanupCron").html(`<a><i class='fas fa-broom'></i>${module.tt('button_clean')}</a>`);
     $(".cleanupCron a").on('click', () => {
         let idList = [];
         let nodes = [];
@@ -246,7 +261,7 @@
             });
             Toast.fire({
                 icon: 'success',
-                title: glo.em.tt('msg_cleanup')
+                title: module.tt('msg_cleanup')
             });
         })
     });
@@ -259,7 +274,7 @@
             $row.remove().draw();
             Toast.fire({
                 icon: 'success',
-                title: glo.em.tt('msg_cron_rm')
+                title: module.tt('msg_cron_rm')
             });
         })
     });
@@ -268,10 +283,10 @@
     const makePostSettings = (action, data = {}) => {
         return {
             method: 'POST',
-            url: glo.router,
+            url: module.config.router,
             data: {
                 action: action,
-                redcap_csrf_token: glo.csrf,
+                redcap_csrf_token: module.config.csrf,
                 projectid: pid,
                 ...data
             }
@@ -303,21 +318,21 @@
     const updateLog = (batch, records) => {
         const $divs = $details.find('div');
         if (totalBatches > 1) {
-            $divs.first().text(glo.em.tt('log_batch', {
+            $divs.first().text(module.tt('log_batch', {
                 batchNumber: batch,
                 totalBatches: totalBatches
             }));
         }
-        records = (records == glo.records) || (records[0] == "*") ? [glo.em.tt('log_all')] : records;
-        $divs.last().text(glo.em.tt('log_records') + records.join(', ').slice(0, 70));
+        records = (records == module.config.records) || (records[0] == "*") ? [module.tt('log_all')] : records;
+        $divs.last().text(module.tt('log_records') + records.join(', ').slice(0, 70));
     };
     const startLogClock = () => {
-        glo.time = new Date();
+        module.config.time = new Date();
         const clock = () => {
-            const secondsSpent = ((new Date()).getTime() - glo.time.getTime()) / 1000;
+            const secondsSpent = ((new Date()).getTime() - module.config.time.getTime()) / 1000;
             const min = String(rounddown(secondsSpent / 60)).padStart(2, '0');
             const sec = String(round(secondsSpent % 60)).padStart(2, '0');
-            $details.find('div').eq(totalBatches > 1 ? 1 : 0).text(glo.em.tt('log_time') + `${min}:${sec}`)
+            $details.find('div').eq(totalBatches > 1 ? 1 : 0).text(module.tt('log_time') + `${min}:${sec}`)
         };
         clock();
         clockInterval = setInterval(clock, 1000);
@@ -326,13 +341,13 @@
 
     // Show a 500 error
     const show500 = (cronError = false) => {
-        let errorText = cronError ? glo.em.tt('error_cron') : glo.em.tt('error_500_text')
+        let errorText = cronError ? module.tt('error_cron') : module.tt('error_500_text')
         run = false;
         toggleLoading();
         stopLogClock();
         Swal.fire({
             icon: 'error',
-            title: glo.em.tt('error_500'),
+            title: module.tt('error_500'),
             text: errorText
         });
     }
@@ -416,13 +431,13 @@
 
     // Build out event options
     const eventBox = document.getElementById('events');
-    $.each(glo.events, (id, name) => {
+    $.each(module.config.events, (id, name) => {
         let newOption = new Option(name, id);
         eventBox.add(newOption);
     });
 
     // Hide the events if we only have 1
-    if (Object.keys(glo.events).length < 2) {
+    if (Object.keys(module.config.events).length < 2) {
         isLongitudinal = false;
         $eventsSelect.closest('.row').hide();
         $eventsSelect.val($eventsSelect.find("option").val());
@@ -430,7 +445,7 @@
 
     // Build out field options
     const fieldBox = document.getElementById('fields');
-    $.each(glo.fields, (id, name) => {
+    $.each(module.config.fields, (id, name) => {
         let newOption = new Option(`${id} : ${name}`, id);
         fieldBox.add(newOption);
     });
@@ -512,7 +527,7 @@
                     }).draw();
                     Toast.fire({
                         icon: 'success',
-                        title: glo.em.tt('msg_cron')
+                        title: module.tt('msg_cron')
                     });
                 }
             });
@@ -531,13 +546,13 @@
         toggleLoading();
         clearLog();
         run = true;
-        records = records[0] == '*' && batchSize > 0 ? glo.records : records;
-        glo.recordBatches = batchArray(records, batchSize).reverse();
-        totalBatches = glo.recordBatches.length;
+        records = records[0] == '*' && batchSize > 0 ? module.config.records : records;
+        module.config.recordBatches = batchArray(records, batchSize).reverse();
+        totalBatches = module.config.recordBatches.length;
         $table.collapse('hide');
         $table.find('table').DataTable().clear();
         startLogClock();
-        sendRequest(glo.recordBatches.pop(), JSON.stringify(events), JSON.stringify(fields), action == "preview", batchSize, 1, 0);
+        sendRequest(module.config.recordBatches.pop(), JSON.stringify(events), JSON.stringify(fields), action == "preview", batchSize, 1, 0);
     });
 
     // All Records toggle
@@ -579,7 +594,7 @@
             stopLogClock();
             Toast.fire({
                 icon: 'info',
-                title: glo.em.tt('msg_cancel')
+                title: module.tt('msg_cancel')
             });
             return;
         }
@@ -617,7 +632,7 @@
                     data.errors.forEach((err) => {
                         Toast.fire({
                             icon: 'error',
-                            title: err.display ? err.text : glo.em.tt('error_unknown')
+                            title: err.display ? err.text : module.tt('error_unknown')
                         });
                     });
                     return;
@@ -634,8 +649,8 @@
                 }
 
                 // Multi batch with more to send
-                if (batchSize > 0 && glo.recordBatches.length) {
-                    sendRequest(glo.recordBatches.pop(), events, fields, preview, batchSize, batchNumber, totalChanges);
+                if (batchSize > 0 && module.config.recordBatches.length) {
+                    sendRequest(module.config.recordBatches.pop(), events, fields, preview, batchSize, batchNumber, totalChanges);
                     return;
                 }
 
@@ -651,7 +666,7 @@
                     return;
                 }
                 localStorage.removeItem('RedcapEMcalcPreview');
-                let msg = preview ? glo.em.tt('msg_nopreview') : glo.em.tt('msg_success', {
+                let msg = preview ? module.tt('msg_nopreview') : module.tt('msg_success', {
                     count: totalChanges
                 });
                 Toast.fire({

@@ -8,8 +8,7 @@ $module->tt_transferToJavascriptModuleObject();
 <script src="<?= $module->getURL('js/jquery.ui.position.min.js'); ?>"></script>
 <link rel="stylesheet" href="<?= $module->getURL('css/jquery.contextMenu.css'); ?>">
 <script>
-    let glo = <?= json_encode($module->loadSettings()); ?>;
-    glo.em = <?= $module->getJavascriptModuleObjectName(); ?>;
+    <?= $module->getJavascriptModuleObjectName(); ?>.config = <?= json_encode($module->loadSettings()); ?>;
 </script>
 
 <div class="projhdr"><i class="fas fa-calculator"></i> <?= $module->tt('module_name'); ?></div>
