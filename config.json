@@ -13,7 +13,7 @@
         }
     ],
     "permissions": [],
-    "framework-version": 11,
+    "framework-version": 9,
     "no-auth-pages": [
         "api"
     ],
@@ -68,6 +68,6 @@
         }
     ],
     "compatibility": {
-        "redcap-version-min": "12.5.9"
+        "redcap-version-min": "12.0.4"
     }
 }
