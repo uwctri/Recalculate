@@ -17,8 +17,8 @@ Features:
 
 FYIs:
 
-* Removing a repating scheduled cron will remove all future runs too
-* A repating scheduled cron that fails via error (usually due to running for over 24 hours) will not repeat
+* Removing a repeating scheduled cron will remove all future runs too
+* A repeating scheduled cron that fails via error (usually due to running for over 24 hours) will not repeat
 * If you find yourself getting a 500 response using the API you should ask your Redcap admin to edit the System Config option "Usable Memory" for the EM, something around 4096 should work. You will also want to ask them to be sure "memory_limit" in the server's php.ini file is atleast the same value.
 
 ## Installing
