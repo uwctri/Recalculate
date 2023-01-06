@@ -31,6 +31,7 @@
     const $details = $(".detailsGrid");
     const $table = $("#previewTable");
     const $showEqCalcs = $("#equalCalcs");
+    const $previewCsv = $("#previewCsv");
     const $bRow = $("#batchSizeRow");
     const $form = $("#primaryForm");
     const $reBtn = $("#reopenBtn");
@@ -51,11 +52,42 @@
         timeFormat: 'hh:mm tt'
     });
 
+    const csvDownload = (table) => {
+        const headers = [
+            module.tt('table_record'),
+            module.tt('table_event'),
+            module.tt('table_field'),
+            module.tt('table_current'),
+            module.tt('table_calc')].join(",")
+        let csv_data = [headers];
+        const hide_correct = $showEqCalcs.is(":checked");
+        $(table).DataTable().rows().every(function () {
+            let data = this.data()
+            if (data.c && hide_correct) return;
+            csv_data.push([`"${data.record.slice(1)}"`,
+            data.event, data.field,
+            `"${data.current.replaceAll('"', '""')}"`,
+            `"${data.calc.replaceAll('"', '""')}"`].join(","));
+        });
+        csv_data = csv_data.join('\n');
+        let file = new Blob([csv_data], {
+            type: "text/csv"
+        });
+        let temp_link = document.createElement('a');
+        temp_link.download = module.tt('table_download_file') + pid + '.csv';
+        let url = window.URL.createObjectURL(file);
+        temp_link.href = url;
+        temp_link.style.display = "none";
+        document.body.appendChild(temp_link);
+        temp_link.click();
+        document.body.removeChild(temp_link);
+    }
+
     // Setup "Generate Preview" Table
     $table.find('table').DataTable({
         data: [],
         pageLength: 40,
-        dom: `<'row'<'col-sm-10'f><'col-sm-2 customToggle'>>
+        dom: `<'row'<'col-sm-10'f><'col-sm-1 previewCsv'><'col-sm-1 customToggle'>>
               <'row'<'col-sm-12'tr>>"
               <'row'<'col-sm-12 col-md-6 small'i><'col-sm-12 col-md-6'p>>`,
         language: {
@@ -113,6 +145,12 @@
         $table.find('table').DataTable().draw();
     });
     $showEqCalcs.prop("checked", true).change();
+
+    // Enable all table downloads
+    $previewCsv.appendTo('.previewCsv').on('click', (el) => {
+        let table = $(el.target).closest('.dataTables_wrapper').find('table');
+        csvDownload(table)
+    });
 
     // Context menu Setup
     $.contextMenu({

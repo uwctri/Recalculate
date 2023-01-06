@@ -101,13 +101,15 @@
     color: #6d6d6d;
 }
 
+.downloadBtn,
 .cleanupCron {
-    color: #dee2e6;
+    color: #adb2b8;
     text-align: right;
     text-decoration: underline;
     padding-top: 0.25em;
 }
 
+.downloadBtn a,
 .cleanupCron a,
 .row-remove {
     cursor: pointer;

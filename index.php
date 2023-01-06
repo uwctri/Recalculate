@@ -142,6 +142,7 @@ $module->tt_transferToJavascriptModuleObject();
 
     <!-- Display Preview -->
     <div id="previewTable" class="row p-2 collapse">
+        <div class="float-right downloadBtn" id="previewCsv"><a><i class="fa fa-download"></i></a></div>
         <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="">
             <input type="checkbox" class="custom-control-input" id="equalCalcs" data-state="1">
             <label class="custom-control-label" for="equalCalcs"></label>
