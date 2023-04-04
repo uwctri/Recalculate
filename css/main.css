@@ -56,6 +56,14 @@
     background: white !important;
 }
 
+#equalCalcs{
+	transform: translateY(2px);
+}
+
+.previewCsv {
+	padding-right: 0;
+}
+
 .paginate_button:hover {
     -webkit-text-fill-color: #212529;
     background: #eeeeee !important;

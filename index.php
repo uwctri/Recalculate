@@ -30,9 +30,9 @@ $module->tt_transferToJavascriptModuleObject();
             <label for="records" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_record'); ?></label>
             <div class="col-10">
                 <input id="records" name="records" placeholder="<?= $module->tt('placeholder_record'); ?>" type="text" class="form-control">
-                <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="<?= $module->tt('select_record'); ?>">
-                    <input type="checkbox" class="custom-control-input" id="allRecords" data-state="0">
-                    <label class="custom-control-label" for="allRecords"></label>
+                <div class="form-check form-switch float-right" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-content="<?= $module->tt('select_record'); ?>">
+                    <input type="checkbox" class="form-check-input" id="allRecords" data-state="0">
+                    <label class="form-check-label" for="allRecords"></label>
                 </div>
             </div>
         </div>
@@ -41,11 +41,11 @@ $module->tt_transferToJavascriptModuleObject();
         <div class="row p-2">
             <label for="events" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_event'); ?></label>
             <div class="col-10">
-                <select multiple="multiple" id="events" name="events" class="custom-select">
+                <select multiple="multiple" id="events" name="events" class="form-select">
                 </select>
-                <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="<?= $module->tt('select_event'); ?>">
-                    <input type="checkbox" class="custom-control-input" id="allEvents" data-state="0">
-                    <label class="custom-control-label" for="allEvents"></label>
+                <div class="form-check form-switch float-right" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-content="<?= $module->tt('select_event'); ?>">
+                    <input type="checkbox" class="form-check-input" id="allEvents" data-state="0">
+                    <label class="form-check-label" for="allEvents"></label>
                 </div>
             </div>
         </div>
@@ -54,11 +54,11 @@ $module->tt_transferToJavascriptModuleObject();
         <div class="row p-2">
             <label for="fields" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_field'); ?></label>
             <div class="col-10">
-                <select id="fields" name="fields" class="custom-select" multiple="multiple">
+                <select id="fields" name="fields" class="form-select" multiple="multiple">
                 </select>
-                <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="<?= $module->tt('select_field'); ?>">
-                    <input type="checkbox" class="custom-control-input" id="allFields" data-state="0">
-                    <label class="custom-control-label" for="allFields"></label>
+                <div class="form-check form-switch float-right" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-content="<?= $module->tt('select_field'); ?>">
+                    <input type="checkbox" class="form-check-input" id="allFields" data-state="0">
+                    <label class="form-check-label" for="allFields"></label>
                 </div>
             </div>
         </div>
@@ -89,13 +89,13 @@ $module->tt_transferToJavascriptModuleObject();
             <div id="onErrorRow" class="row p-2">
                 <label for="onError" class="col-2 col-form-label font-weight-bold"><?= $module->tt('label_on_error'); ?></label>
                 <div class="col-10">
-                    <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="onErrorStop" name="onError">
-                        <label class="custom-control-label" for="onErrorStop"><?= $module->tt('label_on_error_a'); ?></label>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="onErrorStop" name="onError">
+                        <label class="form-check-label" for="onErrorStop"><?= $module->tt('label_on_error_a'); ?></label>
                     </div>
-                    <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="onErrorCont" name="onError">
-                        <label class="custom-control-label" for="onErrorCont"><?= $module->tt('label_on_error_b'); ?></label>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="onErrorCont" name="onError">
+                        <label class="form-check-label" for="onErrorCont"><?= $module->tt('label_on_error_b'); ?></label>
                     </div>
                 </div>
             </div>
@@ -143,9 +143,9 @@ $module->tt_transferToJavascriptModuleObject();
     <!-- Display Preview -->
     <div id="previewTable" class="row p-2 collapse">
         <div class="float-right downloadBtn" id="previewCsv"><a><i class="fa fa-download"></i></a></div>
-        <div class="custom-control custom-switch float-right" data-trigger="hover" data-toggle="popover" data-content="">
-            <input type="checkbox" class="custom-control-input" id="equalCalcs" data-state="1">
-            <label class="custom-control-label" for="equalCalcs"></label>
+        <div class="form-check form-switch float-right" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-content="<?= $module->tt('select_table'); ?>">
+            <input type="checkbox" class="form-check-input" id="equalCalcs" data-state="1">
+            <label class="form-check-label" for="equalCalcs"></label>
         </div>
         <div class="col-12">
             <table style="width:100%" class="table"></table>
@@ -157,7 +157,7 @@ $module->tt_transferToJavascriptModuleObject();
         <label for="records" class="col-3 col-form-label font-weight-bold"><?= $module->tt('label_time'); ?></label>
         <div class="col-6 d-flex">
             <input id="cronTime" placeholder="<?= $module->tt('placeholder_date'); ?>" type="text" class="form-control mr-1">
-            <select id="cronRepeat" class="custom-select ml-1">
+            <select id="cronRepeat" class="form-select ml-1">
                 <option value=""><?= $module->tt('cron_once'); ?></option>
                 <option value="1"><?= $module->tt('cron_daily'); ?></option>
                 <option value="7"><?= $module->tt('cron_weekly'); ?></option>

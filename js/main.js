@@ -43,7 +43,8 @@
     const $cronTime = $("#cronTime");
 
     // Enable popovers, static button width, clear all prev values
-    $('[data-toggle="popover"]').popover();
+	let popovers = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+	popovers.map((el) => new bootstrap.Popover(el));
     $calcBtn.css('width', $calcBtn.css('width'));
     $("#center input").prop("checked", false).val("");
     $errorStop.click();
@@ -124,24 +125,15 @@
 
     // More Table setup
     $showEqCalcs.parent().appendTo('.customToggle').on('change', () => {
-        const $t = $showEqCalcs.parent();
-        $t.popover('dispose');
-        let msg = "";
         if ($showEqCalcs.is(":checked")) {
-            msg = module.tt('select_table_show');
             $.fn.dataTable.ext.search.push(
                 (settings, data, dataIndex, row) => {
                     return !row['c'];
                 }
             )
         } else {
-            msg = module.tt('select_table_hide');
             $.fn.dataTable.ext.search.pop();
         }
-        $t.popover({
-            trigger: 'hover',
-            content: msg
-        });
         $table.find('table').DataTable().draw();
     });
     $showEqCalcs.prop("checked", true).change();
