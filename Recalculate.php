@@ -506,7 +506,7 @@ class Recalculate extends AbstractExternalModule
     {
         $user = $this->getUser();
         if ($user->isSuperUser()) return true;
-        $whitelist = array_filter($this->getProjectSetting("user-whitelist"));
+        $whitelist = array_filter($this->getProjectSetting("user-whitelist") ?? []);
         $dataQuality = $user->getRights()["data_quality_execute"] == "1";
         return count($whitelist) > 0 ? in_array($user->getUsername(), $whitelist) : $dataQuality;
     }
