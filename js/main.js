@@ -43,9 +43,8 @@
     const $cronTime = $("#cronTime");
 
     // Enable popovers, static button width, clear all prev values
-	let popovers = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-	popovers.map((el) => new bootstrap.Popover(el));
-    $calcBtn.css('width', $calcBtn.css('width'));
+    let popovers = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popovers.map((el) => new bootstrap.Popover(el));
     $("#center input").prop("checked", false).val("");
     $errorStop.click();
     $cronTime.datetimepicker({
