@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: Recalculate
+message: >-
+  If you used Recalculate in your RedCap project please cite
+  it using this metadata.
+type: software
+authors:
+  - given-names: Adam
+    family-names: Nunez
+    email: adam.nunez@ctri.wisc.edu
+    affiliation: University of Wisconsin - Madison
+    orcid: 'https://orcid.org/0009-0003-2444-6082'
+  - name: >-
+      University of Wisconsin Center for Tobacco Research
+      and Intervention
+    address: '1930 Monroe St # 200'
+    city: Madison
+    post-code: '53711'
+    region: Wisconsin
+    tel: +1 608 262 8673
+    alias: UW-CTRI
+    website: 'https://ctri.wisc.edu/'
+    country: US
+repository-code: 'https://github.com/uwctri/Recalculate'
+abstract: >-
+  Redcap External Module to force recalcuations on fields,
+  events, or records
+keywords:
+  - RedCap
+license: GPL-3.0
+commit: 52516f83df8a664c9dda151b72f168c6e5d1a92f
+version: 1.3.7
+date-released: '2023-05-25'
