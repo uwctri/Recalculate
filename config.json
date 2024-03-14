@@ -12,8 +12,7 @@
             "institution": "UW Madison - Center for Tobacco Research and Intervention"
         }
     ],
-    "permissions": [],
-    "framework-version": 9,
+    "framework-version": 12,
     "no-auth-pages": [
         "api"
     ],
