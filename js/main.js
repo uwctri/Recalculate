@@ -6,12 +6,8 @@
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 30000,
+        timer: 15000,
         timerProgressBar: false,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
     });
 
     // Globals and common queries
@@ -263,8 +259,10 @@
                     ...makePostSettings('settings'),
                     success: (crons) => {
                         console.log("Refreshed scheduled cron data");
-                        $cronTable.find('table').DataTable().clear();
-                        $cronTable.find('table').DataTable().rows.add(crons).draw();
+                        let table = $cronTable.find('table').DataTable();
+                        let page = table.page();
+                        table.clear();
+                        table.rows.add(crons).draw().page(page).draw('page');
                     }
                 })
             }, 60 * 1000)
