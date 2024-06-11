@@ -495,7 +495,7 @@ class Recalculate extends AbstractExternalModule
     private function getAllRecordIds()
     {
         global $Proj;
-        return array_keys(REDCap::getData($Proj->project_id, 'array', null, $Proj->table_pk));
+        return $this->escape(array_keys(REDCap::getData($Proj->project_id, 'array', null, $Proj->table_pk)));
     }
 
     /*
