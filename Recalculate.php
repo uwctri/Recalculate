@@ -385,7 +385,7 @@ class Recalculate extends AbstractExternalModule
     {
         return [
             "crons" => $this->loadCrons(),
-            "events" => REDCap::getEventNames(),
+            "events" => REDCap::getEventNames(false, true),
             "isClassic" => !REDCap::isLongitudinal(),
             "fields" => $this->getAllCalcFields(),
             "records" => $this->getAllRecordIds(),
