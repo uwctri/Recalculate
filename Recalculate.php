@@ -310,9 +310,13 @@ class Recalculate extends AbstractExternalModule
                 }
 
                 // For specific event writes, flip through events or post 'all'
+                // We could do all events at once, but we might time out on large recalcs
                 if ($config['event']['all']) $config['event']['post'] = ['all'];
                 foreach ($config['event']['post'] as $event_id) {
-                    $calcUpdates = Calculate::saveCalcFields($recordSubset, $fields, $event_id, array(), $proj);
+                    $exclude_rec_event_field = array_diff($config['event']['valid'], $config['event']['post']);
+                    $exclude_rec_event_field = array_fill_keys($exclude_rec_event_field, ["" => ["" => array_fill_keys($fields, true)]]);
+                    $exclude_rec_event_field = array_fill_keys($recordSubset, $exclude_rec_event_field);
+                    $calcUpdates = Calculate::saveCalcFields($recordSubset, $fields, $event_id, $exclude_rec_event_field, $proj);
                     if (is_numeric($calcUpdates)) {
                         $updates += $calcUpdates;
                         continue;
