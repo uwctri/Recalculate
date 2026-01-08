@@ -128,7 +128,7 @@ $module->tt_transferToJavascriptModuleObject();
                     <span class="hidden"><i class="ld ld-spin ld-ring"></i></span>
                 </button>
                 <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="sr-only">Toggle Dropdown</span>
+                    <span class="sr-only"></span>
                 </button>
                 <div class="dropdown-menu">
                     <a class="dropdown-item" data-action="preview" href="#"><?= $module->tt('button_preview'); ?></a>
