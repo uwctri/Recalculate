@@ -127,15 +127,15 @@ $module->tt_transferToJavascriptModuleObject();
                     <span class="btnText"> <?= $module->tt('button_submit'); ?> </span>
                     <span class="hidden"><i class="ld ld-spin ld-ring"></i></span>
                 </button>
-                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
-                    <span class="visually-hidden">Toggle Dropdown</span>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
+                    <span class="visually-hidden"></span>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" data-action="preview" href="#"><?= $module->tt('button_preview'); ?></a></li>
+                        <li><a class="dropdown-item" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a></li>
+                        <li><a class="dropdown-item" data-action="old" href="#"><?= $module->tt('button_old'); ?></a></li>
+                        <li><a class="dropdown-item" data-action="cron" href="#"><?= $module->tt('button_cron'); ?></a></li>
+                    </ul>
                 </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" data-action="preview" href="#"><?= $module->tt('button_preview'); ?></a></li>
-                    <li><a class="dropdown-item" data-action="cancel" href="#"><?= $module->tt('button_cancel'); ?></a></li>
-                    <li><a class="dropdown-item" data-action="old" href="#"><?= $module->tt('button_old'); ?></a></li>
-                    <li><a class="dropdown-item" data-action="cron" href="#"><?= $module->tt('button_cron'); ?></a></li>
-                </ul>
             </div>
         </div>
     </div>
