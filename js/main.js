@@ -42,6 +42,7 @@
     let popovers = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     popovers.map((el) => new bootstrap.Popover(el));
     $("#center input").prop("checked", false).val("");
+    $calcBtn.css("width", $("#recalc").css("width").replace("px", "") * 1.05 + "px");
     $errorStop.click();
     $cronTime.datetimepicker({
         ampm: true,
