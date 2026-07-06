@@ -312,6 +312,7 @@ class Recalculate extends AbstractExternalModule
                 // For specific event writes, flip through events or post 'all'
                 // We could do all events at once, but we might time out on large recalcs
                 if ($config['event']['all']) $config['event']['post'] = ['all'];
+                if ($fields === null) $fields = $config['field']['valid'];
                 foreach ($config['event']['post'] as $event_id) {
                     $exclude_rec_event_field = array_diff($config['event']['valid'], $config['event']['post']);
                     $exclude_rec_event_field = array_fill_keys($exclude_rec_event_field, ["" => ["" => array_fill_keys($fields, true)]]);
