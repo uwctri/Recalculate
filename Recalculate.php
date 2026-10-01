@@ -7,6 +7,7 @@ use ExternalModules\ExternalModules;
 use REDCap;
 use Calculate;
 use Project;
+use User;
 
 class Recalculate extends AbstractExternalModule
 {
@@ -45,15 +46,15 @@ class Recalculate extends AbstractExternalModule
                 return $this->loadCrons();
 
             case "rmCron":
-                return $this->remove_cron($payload["ids"] ?? []);
+                return $this->remove_cron($payload["ids"]);
 
             case "cron":
-                $config = $this->parse_field_event_record($payload["fields"] ?? [], $payload["events"] ?? [], $payload["records"] ?? []);
-                return $this->setup_cron($config, $payload["batchSize"] ?? 0, $payload["time"] ?? null, $payload["repeat"] ?? null);
+                $config = $this->parse_field_event_record($payload["fields"], $payload["events"], $payload["records"]);
+                return $this->setup_cron($config, $payload["batchSize"], $payload["time"], $payload["repeat"]);
 
             case "preview":
             case "calculate":
-                $config = $this->parse_field_event_record($payload["fields"] ?? [], $payload["events"] ?? [], $payload["records"] ?? []);
+                $config = $this->parse_field_event_record($payload["fields"], $payload["events"], $payload["records"]);
                 $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
                 return $this->recalculate($config, $action);
         }
@@ -88,11 +89,7 @@ class Recalculate extends AbstractExternalModule
             $Proj = new Project($project_id);
         }
 
-        $fields = $params["fields"] ?? [];
-        $events = $params["events"] ?? [];
-        $records = $params["records"] ?? [];
-
-        $config = $this->parse_field_event_record($fields, $events, $records);
+        $config = $this->parse_field_event_record($params["fields"], $params["events"], $params["records"]);
         $this->projectLog("api", $config['field']['post'], $config['event']['post'], $config['record']['post'], $project_id);
         return $this->recalculate($config, "api", $Proj);
     }
@@ -131,6 +128,7 @@ class Recalculate extends AbstractExternalModule
                     if ($expire > $cron["time"]) {
                         $cron["status"] = -1;
                         $this->update_cron($id, $cron, $pid);
+                        $this->notifyCronError($pid, $id, $cron, "The cron job exceeded the maximum allowed run time ({$maxTime} seconds) and timed out.");
                     }
                     // Run the cron
                     elseif ($time > $cron["time"] && $cron["status"] == 0) {
@@ -145,14 +143,34 @@ class Recalculate extends AbstractExternalModule
                         $config = $this->parse_field_event_record($cron["fields"], $cron["events"], $cron["records"]);
                         $records = ((count($cron["records"]) == 0) || (count($cron["records"]) == 1 && $cron["records"][0] == "*")) ? $config["record"]["valid"] : $cron["records"];
                         $batchedRecords = array_chunk($records, $size);
-                        foreach ($batchedRecords as $set) {
-                            $config['record']['post'] = $set;
-                            $this->recalculate($config, "cron", $Proj);
-                            $cron["log"] = [
-                                "time" => gmdate($this->timeFormat),
-                                "records" => array_slice($set, 0, 5)
-                            ];
+                        try {
+                            $cronErrors = [];
+                            foreach ($batchedRecords as $set) {
+                                $config['record']['post'] = $set;
+                                $calcResult = $this->recalculate($config, "cron", $Proj);
+                                if (!empty($calcResult['errors'])) {
+                                    foreach ($calcResult['errors'] as $err) {
+                                        $cronErrors[] = $err['text'];
+                                    }
+                                }
+                                $cron["log"] = [
+                                    "time" => gmdate($this->timeFormat),
+                                    "records" => array_slice($set, 0, 5)
+                                ];
+                                $this->update_cron($id, $cron, $pid);
+                            }
+
+                            if (!empty($cronErrors)) {
+                                $cron["status"] = -1;
+                                $this->update_cron($id, $cron, $pid);
+                                $this->notifyCronError($pid, $id, $cron, "Errors encountered during recalculation:\n- " . implode("\n- ", array_unique($cronErrors)));
+                                return;
+                            }
+                        } catch (\Throwable $e) {
+                            $cron["status"] = -1;
                             $this->update_cron($id, $cron, $pid);
+                            $this->notifyCronError($pid, $id, $cron, "An unexpected exception occurred: " . $e->getMessage());
+                            return;
                         }
 
                         // Check for repeat config
@@ -240,6 +258,58 @@ class Recalculate extends AbstractExternalModule
         $json = empty($json) ? [] : json_decode($json, true);
         $json[$id] = $cron;
         $this->setProjectSetting('cron', json_encode($json), $pid);
+    }
+
+    /*
+    Send email notification to configured users when a cron job encounters an error
+    */
+    private function notifyCronError($pid, $cronId, $cron, $errorMessage)
+    {
+        $users = $this->getProjectSetting('cron-error-email-users', $pid);
+        if (empty($users) || !is_array($users)) {
+            return;
+        }
+        $users = array_filter($users);
+
+        $emails = [];
+        foreach ($users as $username) {
+            $userInfo = User::getUserInfo($username);
+            if (!empty($userInfo['user_email'])) {
+                $emails[] = $userInfo['user_email'];
+            }
+        }
+        $emails = array_unique($emails);
+        if (empty($emails)) {
+            return;
+        }
+
+        global $Proj;
+        $projectTitle = $Proj->project['app_title'];
+        $fromEmail = $Proj->project['project_contact_email'];
+        if (empty($fromEmail)) {
+            return; // No valid from email, cannot send notification
+        }
+
+        $subject = "[REDCap Recalculate] Cron Job Error on Project \"$projectTitle\" (PID $pid)";
+        $fieldsStr = is_array($cron['fields']) ? implode(', ', $cron['fields']) : ($cron['fields'] ?? '');
+        $eventsStr = is_array($cron['events']) ? implode(', ', $cron['events']) : ($cron['events'] ?? '');
+        $recordsStr = is_array($cron['records']) ? implode(', ', $cron['records']) : ($cron['records'] ?? '');
+
+        $body = "A scheduled recalculation cron job encountered an error on REDCap project \"$projectTitle\" (PID $pid).\n\n"
+            . "Job Details:\n"
+            . "----------------------------------------\n"
+            . "Job ID: $cronId\n"
+            . "Scheduled Time: " . ($cron['time'] ?? 'N/A') . "\n"
+            . "Fields: $fieldsStr\n"
+            . "Events: $eventsStr\n"
+            . "Records: $recordsStr\n"
+            . "Batch Size: " . ($cron['size'] ?? 'default') . "\n\n"
+            . "Error Message:\n"
+            . "----------------------------------------\n"
+            . "$errorMessage\n\n"
+            . "Please log in to REDCap and inspect the Recalculate module on project $pid.";
+
+        REDCap::email(implode(', ', $emails), $fromEmail, $subject, $body, '', '', 'REDCap Recalculate', [], $pid);
     }
 
     /*

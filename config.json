@@ -50,6 +50,19 @@
             "repeatable": true
         },
         {
+            "key": "desc-cron-error-email",
+            "name": "Users specified below will receive an email notification if a scheduled recalculation cron on this project encounters an error or fails.",
+            "tt_name": "module_desc_cron_error_email",
+            "type": "descriptive"
+        },
+        {
+            "key": "cron-error-email-users",
+            "name": "Email on Cron Error",
+            "tt_name": "module_cron_error_email_user",
+            "type": "user-list",
+            "repeatable": true
+        },
+        {
             "key": "cron",
             "type": "textarea",
             "hidden": true
