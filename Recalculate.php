@@ -314,9 +314,14 @@ class Recalculate extends AbstractExternalModule
                 if ($config['event']['all']) $config['event']['post'] = ['all'];
                 if ($fields === null) $fields = $config['field']['valid'];
                 foreach ($config['event']['post'] as $event_id) {
-                    $exclude_rec_event_field = array_diff($config['event']['valid'], $config['event']['post']);
-                    $exclude_rec_event_field = array_fill_keys($exclude_rec_event_field, ["" => ["" => array_fill_keys($fields, true)]]);
-                    $exclude_rec_event_field = array_fill_keys($recordSubset, $exclude_rec_event_field);
+                    $exclude_rec_event_field = [];
+                    if (!$config['event']['all']) {
+                        $exclude_events = array_diff($config['event']['valid'], $config['event']['post']);
+                        if (!empty($exclude_events)) {
+                            $exclude_rec_event_field = array_fill_keys($exclude_events, ["" => ["" => array_fill_keys($fields, true)]]);
+                            $exclude_rec_event_field = array_fill_keys($recordSubset, $exclude_rec_event_field);
+                        }
+                    }
                     $calcUpdates = Calculate::saveCalcFields($recordSubset, $fields, $event_id, $exclude_rec_event_field, $proj);
                     if (is_numeric($calcUpdates)) {
                         $updates += $calcUpdates;
