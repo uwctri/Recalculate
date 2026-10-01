@@ -175,9 +175,10 @@ class Recalculate extends AbstractExternalModule
             "status" => 0
         ];
         $this->setProjectSetting('cron', json_encode($json));
+        $id = $this->loadCrons();
         return [
             "errors" =>  [],
-            "id" => end($this->loadCrons())["id"]
+            "id" => end($id)["id"]
         ];
     }
 
@@ -433,7 +434,8 @@ class Recalculate extends AbstractExternalModule
     private function getFieldAccessMap()
     {
         global $Proj;
-        $rights = reset(REDCap::getUserRights(USERID))['forms'];
+        $rights = REDCap::getUserRights(USERID);
+        $rights = reset($rights)['forms'];
         $map = [];
         foreach ($Proj->metadata as $attr) {
             $map[$attr['field_name']] = [

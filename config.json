@@ -12,7 +12,7 @@
             "institution": "UW Madison - Center for Tobacco Research and Intervention"
         }
     ],
-    "framework-version": 16,
+    "framework-version": 17,
     "no-auth-pages": [
         "api"
     ],
@@ -65,8 +65,5 @@
             "cron_frequency": 60,
             "cron_max_run_time": 86400
         }
-    ],
-    "compatibility": {
-        "redcap-version-min": "15.1.0"
-    }
+    ]
 }
