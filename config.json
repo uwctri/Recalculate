@@ -13,6 +13,13 @@
         }
     ],
     "framework-version": 17,
+    "auth-ajax-actions": [
+        "settings",
+        "rmCron",
+        "cron",
+        "preview",
+        "calculate"
+    ],
     "no-auth-pages": [
         "api"
     ],

@@ -152,8 +152,8 @@
             totalBatches = 1;
             startLogClock();
             const data = $table.find('table').DataTable().row(options.$trigger).data();
-            const event = JSON.stringify([data.event]);
-            const field = JSON.stringify([data.field]);
+            const event = [data.event];
+            const field = [data.field];
             sendRequest([data.record.slice(1)], event, field, false, 0, 1, 0);
         },
         items: {
@@ -163,27 +163,19 @@
 
     // Remove Cron Function
     const cleanup = (idList, finishFunc) => {
-        $.ajax({
-            ...makePostSettings('rmCron', { ids: idList }),
+        module.ajax('rmCron', { ids: idList }).then((data) => {
+            console.log(data);
 
-            // Only occurs on network or technical issue
-            error: (jqXHR, textStatus, errorThrown) => {
-                console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
+            // 500 error
+            if (!data || data.errors?.length) {
                 show500(true);
-            },
-
-            // Response returned from server
-            success: (data) => {
-                console.log(data);
-
-                // 500 error
-                if ((typeof data == "string" && data.length === 0) || data.errors.length) {
-                    show500(true);
-                    return;
-                }
-
-                finishFunc();
+                return;
             }
+
+            finishFunc();
+        }).catch((err) => {
+            console.error(err);
+            show500(true);
         });
     }
 
@@ -256,16 +248,15 @@
         initComplete: () => {
             // Refresh data every min
             setInterval(() => {
-                $.ajax({
-                    ...makePostSettings('settings'),
-                    success: (crons) => {
-                        console.log("Refreshed scheduled cron data");
-                        let table = $cronTable.find('table').DataTable();
-                        let page = table.page();
-                        table.clear();
-                        table.rows.add(crons).draw().page(page).draw('page');
-                    }
-                })
+                module.ajax('settings').then((crons) => {
+                    console.log("Refreshed scheduled cron data");
+                    let table = $cronTable.find('table').DataTable();
+                    let page = table.page();
+                    table.clear();
+                    table.rows.add(crons).draw().page(page).draw('page');
+                }).catch((err) => {
+                    console.error("Failed to refresh scheduled cron data", err);
+                });
             }, 60 * 1000)
         }
     });
@@ -306,21 +297,6 @@
             });
         })
     });
-
-    // Ajax settings Util function
-    const makePostSettings = (action, data = {}) => {
-        return {
-            method: 'POST',
-            url: module.config.router,
-            data: {
-                action: action,
-                redcap_csrf_token: module.config.csrf,
-                projectid: pid,
-                ...data
-            }
-        }
-
-    }
 
     // Toggle loading ring
     const toggleLoading = () => {
@@ -528,36 +504,28 @@
             $target.prop("disabled", true);
             setTimeout(() => $target.prop("disabled", false), 2000);
 
-            $.ajax({
-                ...makePostSettings('cron', { ...settings, time, repeat }),
+            module.ajax('cron', { ...settings, time, repeat }).then((data) => {
+                console.log(data);
 
-                // Only occurs on network or technical issue
-                error: (jqXHR, textStatus, errorThrown) => {
-                    console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
+                // 500 error
+                if (!data || data.errors?.length) {
                     show500(true);
-                },
-
-                // Response returned from server
-                success: (data) => {
-                    console.log(data);
-
-                    // 500 error
-                    if ((typeof data == "string" && data.length === 0) || data.errors.length) {
-                        show500(true);
-                        return;
-                    }
-
-                    $cronTable.find('table').DataTable().row.add({
-                        ...settings,
-                        time,
-                        status: 0,
-                        id: data.id
-                    }).draw();
-                    Toast.fire({
-                        icon: 'success',
-                        title: module.tt('msg_cron')
-                    });
+                    return;
                 }
+
+                $cronTable.find('table').DataTable().row.add({
+                    ...settings,
+                    time,
+                    status: 0,
+                    id: data.id
+                }).draw();
+                Toast.fire({
+                    icon: 'success',
+                    title: module.tt('msg_cron')
+                });
+            }).catch((err) => {
+                console.error(err);
+                show500(true);
             });
 
             return
@@ -580,7 +548,7 @@
         $table.collapse('hide');
         $table.find('table').DataTable().clear();
         startLogClock();
-        sendRequest(module.config.recordBatches.pop(), JSON.stringify(events), JSON.stringify(fields), action == "preview", batchSize, 1, 0);
+        sendRequest(module.config.recordBatches.pop(), events, fields, action == "preview", batchSize, 1, 0);
     });
 
     // All Records toggle
@@ -629,79 +597,71 @@
 
         // Update the Detials area
         updateLog(batchNumber, records);
-        $.ajax({
-            ...makePostSettings(preview ? 'preview' : 'calculate', {
-                records: JSON.stringify(records),
-                events: events,
-                fields: fields,
-            }),
+        module.ajax(preview ? 'preview' : 'calculate', {
+            records: records,
+            events: events,
+            fields: fields,
+        }).then((data) => {
+            console.log(data);
 
-            // Only occurs on network or technical issue
-            error: (jqXHR, textStatus, errorThrown) => {
-                console.log(`${JSON.stringify(jqXHR)}\n${textStatus}\n${errorThrown}`)
+            // Empty data / error
+            if (!data) {
                 show500();
-            },
+                return;
+            }
 
-            // Response returned from server
-            success: (data) => {
-                console.log(data);
-
-                // Empty string, 500 error
-                if (typeof data == "string" && data.length === 0) {
-                    show500();
-                    return;
-                }
-
-                // Server returned a validation error
-                if (data.errors.length && $errorStop.is(":checked")) {
-                    toggleLoading();
-                    stopLogClock();
-                    run = false;
-                    data.errors.forEach((err) => {
-                        Toast.fire({
-                            icon: 'error',
-                            title: err.display ? err.text : module.tt('error_unknown')
-                        });
-                    });
-                    return;
-                }
-
-                // For any valid response, log and update
-                totalChanges += data.changes;
-                batchNumber += 1;
-
-                // Update preview table
-                if (preview && Object.entries(data.preview).length) {
-                    updatePreviewTable(data.preview);
-                    showTable();
-                }
-
-                // Multi batch with more to send
-                if (batchSize > 0 && module.config.recordBatches.length) {
-                    sendRequest(module.config.recordBatches.pop(), events, fields, preview, batchSize, batchNumber, totalChanges);
-                    return;
-                }
-
-                // Single post or done with posts, show success toast
+            // Server returned a validation error
+            if (data.errors && data.errors.length && $errorStop.is(":checked")) {
                 toggleLoading();
                 stopLogClock();
                 run = false;
-                if (preview && $table.is(":visible")) {
-                    localStorage.setItem("RedcapEMcalcPreview", JSON.stringify({
-                        date: (new Date()).getTime(),
-                        data: data.preview
-                    }));
-                    return;
-                }
-                localStorage.removeItem('RedcapEMcalcPreview');
-                let msg = preview ? module.tt('msg_nopreview') : module.tt('msg_success', {
-                    count: totalChanges
+                data.errors.forEach((err) => {
+                    Toast.fire({
+                        icon: 'error',
+                        title: err.display ? err.text : module.tt('error_unknown')
+                    });
                 });
-                Toast.fire({
-                    icon: 'success',
-                    title: msg
-                });
+                return;
             }
+
+            // For any valid response, log and update
+            totalChanges += data.changes;
+            batchNumber += 1;
+
+            // Update preview table
+            if (preview && Object.entries(data.preview).length) {
+                updatePreviewTable(data.preview);
+                showTable();
+            }
+
+            // Multi batch with more to send
+            if (batchSize > 0 && module.config.recordBatches.length) {
+                sendRequest(module.config.recordBatches.pop(), events, fields, preview, batchSize, batchNumber, totalChanges);
+                return;
+            }
+
+            // Single post or done with posts, show success toast
+            toggleLoading();
+            stopLogClock();
+            run = false;
+            if (preview && $table.is(":visible")) {
+                localStorage.setItem("RedcapEMcalcPreview", JSON.stringify({
+                    date: (new Date()).getTime(),
+                    data: data.preview
+                }));
+                return;
+            }
+            localStorage.removeItem('RedcapEMcalcPreview');
+            let msg = preview ? module.tt('msg_nopreview') : module.tt('msg_success', {
+                count: totalChanges
+            });
+            Toast.fire({
+                icon: 'success',
+                title: msg
+            });
+        }).catch((err) => {
+            console.error(err);
+            show500();
         });
     }
 })();

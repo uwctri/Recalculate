@@ -32,7 +32,36 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Process a post request from API or router
+    Redcap Hook. Handles AJAX requests from Recalculate Page
+    */
+    public function redcap_module_ajax($action, $payload, $project_id)
+    {
+        global $Proj;
+        if (!isset($Proj) || $Proj->project_id != $project_id) {
+            $Proj = new Project($project_id);
+        }
+
+        switch ($action) {
+            case "settings":
+                return $this->loadCrons();
+
+            case "rmCron":
+                return $this->remove_cron($payload["ids"] ?? []);
+
+            case "cron":
+                $config = $this->parse_field_event_record($payload["fields"] ?? [], $payload["events"] ?? [], $payload["records"] ?? []);
+                return $this->setup_cron($config, $payload["batchSize"] ?? 0, $payload["time"] ?? null, $payload["repeat"] ?? null);
+
+            case "preview":
+            case "calculate":
+                $config = $this->parse_field_event_record($payload["fields"] ?? [], $payload["events"] ?? [], $payload["records"] ?? []);
+                $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
+                return $this->recalculate($config, $action);
+        }
+    }
+
+    /*
+    Process a post request from API
     */
     public function process($tokenRequired)
     {
@@ -399,9 +428,7 @@ class Recalculate extends AbstractExternalModule
             "events" => REDCap::getEventNames(false, true),
             "isClassic" => !REDCap::isLongitudinal(),
             "fields" => $this->getAllCalcFields(),
-            "records" => $this->getAllRecordIds(),
-            "csrf"   => $this->getCSRFToken(),
-            "router" => $this->getUrl('router.php')
+            "records" => $this->getAllRecordIds()
         ];
     }
 
