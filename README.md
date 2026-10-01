@@ -27,18 +27,23 @@ You can install the module from the REDCap EM repo or drop it directly in your m
 
 ## API
 
-This module exposes a simple API to trigger recalcuations ...
+This module exposes a REDCap API action to trigger recalculations via REDCap's native External Module API framework:
 
-`POST /api/?type=module&prefix=recalculate&page=api&NOAUTH`
+`POST /api/`
 
 |**Body Parameter**|              **Description**             |   **Type**   |
 |:-----------------:|:---------------------------------------:|:------------:|
 |   token           |   User's API token                      |  string      |
+|   content         |   'externalModule'                      |  string      |
+|   prefix          |   'recalculate'                         |  string      |
+|   action          |   'recalculate'                         |  string      |
+|   format          |   'json'                                |  string      |
+|   returnFormat    |   'json'                                |  string      |
 |   fields          |   Unique field names or '*' for all     |  json array  |
 |   events          |   Event IDs or '*' for all              |  json array  |
 |   records         |   Record IDs or '*' for all             |  json array  |
 
-No defaults are assumed by the api, thus **all fields are requried**. A parameter type of "json array" should always be an array, not a naked string. Errors are not returned for invalid event ids, the ids are simply thrown out.
+No defaults are assumed by the api, thus **all fields are required**. A parameter type of "json array" should always be an array (e.g. `["*"]`), not a naked string. Errors are not returned for invalid event ids, the ids are simply thrown out.
 
 **Return Format**
 

@@ -20,12 +20,11 @@
         "preview",
         "calculate"
     ],
-    "no-auth-pages": [
-        "api"
-    ],
-    "no-csrf-pages": [
-        "api"
-    ],
+    "api-actions": {
+        "recalculate": {
+            "description": "Recalculate calculated fields for specified records, events, and fields."
+        }
+    },
     "links": {
         "project": [
             {

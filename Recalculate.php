@@ -7,7 +7,6 @@ use ExternalModules\ExternalModules;
 use REDCap;
 use Calculate;
 use Project;
-use RestUtility;
 
 class Recalculate extends AbstractExternalModule
 {
@@ -61,45 +60,43 @@ class Recalculate extends AbstractExternalModule
     }
 
     /*
-    Process a post request from API
+    REDCap Hook. Handles API requests via REDCap's native External Module API framework
     */
-    public function process($tokenRequired)
+    public function redcap_module_api($action, $payload, $project_id, $user_id, $format, $returnFormat, $csvDelim)
+    {
+        if ($returnFormat && $returnFormat !== 'json') {
+            return $this->apiErrorResponse("This API only supports JSON as return format.", 400);
+        }
+
+        switch ($action) {
+            case "recalculate":
+                $result = $this->executeRecalculateApi($payload, $project_id);
+                return $this->apiJsonResponse($result);
+
+            default:
+                return $this->apiErrorResponse("Unknown action: " . htmlspecialchars($action), 400);
+        }
+    }
+
+    /*
+    Core API recalculate execution, invoked by redcap_module_api hook
+    */
+    public function executeRecalculateApi($params, $project_id)
     {
         global $Proj;
-
-        $request = RestUtility::processRequest($tokenRequired);
-        $params = $request->getRequestVars();
-        $project_id = $params['projectid'];
-
-        // API calls need to have a new project instance created
-        if (!isset($Proj)) {
+        if (!isset($Proj) || $Proj->project_id != $project_id) {
             $Proj = new Project($project_id);
         }
 
-        // Only really needed for API, but just check for everyone
-        if (!$this->isModuleEnabledForProject($project_id)) {
-            RestUtility::sendResponse(400, "The requested module is currently disabled on this project.");
-        }
+        $fields = $params["fields"] ?? [];
+        $events = $params["events"] ?? [];
+        $records = $params["records"] ?? [];
 
-        // Run core code
-        $result = [];
-        $action = $params["action"] ?? "api";
-
-        if ($action == "settings") {
-            $result = $this->loadCrons();
-        } elseif ($action == "rmCron") {
-            $result = $this->remove_cron($params["ids"]);
-        } else {
-            $config = $this->parse_field_event_record($params["fields"], $params["events"], $params["records"], $Proj);
-            if ($action == "cron") {
-                $result = $this->setup_cron($config, $params["batchSize"], $params["time"], $params["repeat"]);
-            } else { // API, Calc
-                $this->projectLog($action, $config['field']['post'], $config['event']['post'], $config['record']['post']);
-                $result =  $this->recalculate($config, $action);
-            }
-        }
-        return json_encode($result);
+        $config = $this->parse_field_event_record($fields, $events, $records);
+        $this->projectLog("api", $config['field']['post'], $config['event']['post'], $config['record']['post'], $project_id);
+        return $this->recalculate($config, "api", $Proj);
     }
+
 
     /*
     Cron job method to check if any user defined recalcs should run
@@ -254,21 +251,32 @@ class Recalculate extends AbstractExternalModule
         // Can't use REDCap:: here as we are called by cron
         global $Proj;
         $allEvents = $Proj->longitudinal ? array_keys($Proj->eventInfo) : ['all'];
-        function decode($input)
-        {
-            return array_map('trim', is_string($input) ? (json_decode($input, true) ?? []) : $input);
-        }
+        $decode = function ($input) {
+            if (empty($input)) {
+                return [];
+            }
+            if (is_string($input)) {
+                $decoded = json_decode($input, true);
+                $input = is_array($decoded) ? $decoded : [$input];
+            }
+            if (!is_array($input)) {
+                return [];
+            }
+            return array_map(function ($val) {
+                return trim((string) $val);
+            }, $input);
+        };
         return [
             "field" => [
-                "post" => decode($fields),
+                "post" => $decode($fields),
                 "valid" => array_keys($this->getAllCalcFields()),
             ],
             "event" => [
-                "post" => decode($events),
+                "post" => $decode($events),
                 "valid" => $allEvents,
             ],
             "record" => [
-                "post" => decode($records),
+                "post" => $decode($records),
                 "valid" => $this->getAllRecordIds(),
             ]
         ];
