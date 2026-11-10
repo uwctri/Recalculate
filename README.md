@@ -55,3 +55,9 @@ No defaults are assumed by the api, thus **all fields are required**. A paramete
   "preview": []  // Always an empty array, used only internally
 }
 ```
+
+
+## Dependencies
+
+* **jQuery contextMenu** (`js/jquery.contextMenu.js`) - Pinned to v2.9.2. Upstream library is frozen (no releases since 2020).
+* **jQuery UI Position** (`js/jquery.ui.position.min.js`) - Pinned to v1.12.1. Fallback for contextMenu; pinned to avoid conflicting with REDCap core's global jQuery UI (1.13.x).
